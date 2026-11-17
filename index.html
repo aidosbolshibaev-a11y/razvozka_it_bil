@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><title>Развозка Burabay IT BIL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f5f6f8;--c:#fff;--t:#1c1f26;--m:#6b7280;--a:#1f6feb;--b:#d9dce2;--e:#c62828;--ok:#1b7f3b;--w:#fff4d6}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14161a;--c:#1e2127;--t:#eceef2;--m:#9aa1ad;--a:#5b9dff;--b:#343942;--e:#ff6b6b;--ok:#4cc27a;--w:#3a3115}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--t);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.lang{display:flex;gap:6px;flex:none}.lang button{padding:7px 11px;border:1px solid var(--b);background:var(--c);color:var(--t);border-radius:8px;font-size:14px;cursor:pointer}
+.lang button.on{background:var(--a);color:#fff;border-color:var(--a)}
+h1{font-size:22px;margin:8px 0 4px}h2{font-size:17px;margin:0 0 10px}
+.card{background:var(--c);border:1px solid var(--b);border-radius:12px;padding:16px;margin:12px 0}
+.card.due{background:var(--w);border-color:#e0b000}
+.intro ol{margin:6px 0 0;padding-left:20px}.intro li{margin:5px 0}
+label{display:block;font-size:14px;color:var(--m);margin:12px 0 4px}
+select,input{width:100%;box-sizing:border-box;padding:11px;font-size:16px;border:1px solid var(--b);border-radius:8px;background:var(--bg);color:var(--t)}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.seg{display:flex;gap:8px}.seg button{flex:1;padding:11px;border:1px solid var(--b);background:var(--bg);color:var(--t);border-radius:8px;font-size:15px;cursor:pointer}
+.seg button.on{background:var(--a);color:#fff;border-color:var(--a)}
+.go{width:100%;margin-top:18px;padding:13px;font-size:16px;font-weight:600;border:0;border-radius:8px;background:var(--a);color:#fff;cursor:pointer}
+.go:disabled{opacity:.5}.m{color:var(--m);font-size:14px}.err{color:var(--e);margin-top:10px}.ok{color:var(--ok);margin-top:10px}
+.price{margin-top:8px;font-weight:600}
+.ph{display:flex}.ph span{padding:11px 10px;border:1px solid var(--b);border-right:0;border-radius:8px 0 0 8px;background:var(--c);color:var(--m);font-size:16px}
+.ph input{flex:1;min-width:0;width:auto;border-radius:0 8px 8px 0}
+.sm{padding:8px 12px;font-size:14px;border:1px solid var(--b);background:var(--bg);color:var(--t);border-radius:8px;cursor:pointer;margin:8px 6px 0 0}
+.wrap{overflow-x:auto;margin-top:8px}table{border-collapse:collapse;font-size:13px;min-width:100%}
+th,td{border:1px solid var(--b);padding:5px 7px;text-align:left;white-space:nowrap}th{background:var(--bg)}
+</style></head><body><main>
+<div class="top">
+<div><h1 id="h1">Развозка Burabay IT BIL</h1><div class="m" data-i="sub"></div></div>
+<div class="lang" id="lang"><button data-v="kz">Қаз</button><button data-v="ru">Рус</button></div>
+</div>
+
+<div class="card intro"><h2 data-i="introH"></h2>
+<ol><li data-i="i1"></li><li data-i="i2"></li><li data-i="i3"></li><li data-i="i4"></li><li data-i="i5"></li><li data-i="i6"></li></ol></div>
+
+<div class="card" id="form">
+<h2 id="formTitle"></h2>
+<label data-i="lDir"></label>
+<div class="seg" id="dir"><button data-v="fri">Щучинск → Астана</button><button data-v="sun">Астана → Щучинск</button></div>
+<label data-i="lTr"></label>
+<div class="seg" id="tr"><button data-v="car" data-i="car"></button><button data-v="train" data-i="train"></button></div>
+<label data-i="lDate"></label><input id="date" type="date">
+<label data-i="lTime"></label><select id="time"></select>
+<div id="carBox">
+<label data-i="lTo"></label>
+<select id="pt"></select>
+<div id="ownBox" hidden><label data-i="lAddr"></label><input id="addr" autocomplete="street-address" data-ph="phAddr"></div>
+<div class="price" id="price"></div>
+</div>
+<div id="trainBox" hidden>
+<label data-i="lPoa"></label>
+<div class="seg" id="poa"><button data-v="Да" data-i="yes"></button><button data-v="Нет" data-i="no"></button></div>
+</div>
+<label data-i="lName"></label><input id="name" autocomplete="off" data-ph="phName">
+<label data-i="lCls"></label>
+<div class="row"><select id="num"><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option></select>
+<select id="let"><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></div>
+<label data-i="lPhone"></label><div class="ph"><span>+7</span><input id="phone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="15" placeholder="(777) 111 22 33"></div>
+<label data-i="lPin"></label><input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="4" data-ph="phPin"><div class="m" data-i="pinHint"></div>
+<button class="go" id="send"></button>
+<button class="sm" id="cancelEdit" hidden data-i="cancelEdit"></button>
+<div id="msg"></div>
+</div>
+
+<div class="card" id="mine">
+<h2 data-i="mineH"></h2>
+<div class="row"><div class="ph"><span>+7</span><input id="mPhone" type="tel" inputmode="numeric" maxlength="15" placeholder="(777) 111 22 33"></div><input id="mPin" type="password" inputmode="numeric" maxlength="4" data-ph="phPin"></div>
+<button class="sm" id="find" data-i="find"></button><div class="m" id="mineMsg"></div><div id="mineList"></div>
+<p class="m" data-i="mineNote"></p>
+</div>
+
+</main>
+<script src="config.js"></script>
+<script>
+//PURE-START
+const TZ=5, WA_DEFAULT="";
+const PRICE={own:6500,point:5500};
+const POINTS=["Точка 1","Точка 2"];
+const PTL={ru:["Точка 1","Точка 2"],kz:["1-нүкте","2-нүкте"]};
+const SLOTS={fri:{car:["14:00","16:00"],train:["14:20","15:35"]},sun:{car:["14:00","16:00"],train:["10:10"]}};
+const DIRS={fri:"Щучинск → Астана",sun:"Астана → Щучинск"};
+const TRN={car:"🚗 Машина",train:"🚆 Электричка"};
+const pad=n=>String(n).padStart(2,"0");
+const parse=s=>{const[y,m,d]=s.split("-").map(Number);return{y,m:m-1,d}};
+const at=(y,m,d,h,mi)=>new Date(Date.UTC(y,m,d,h-TZ,mi));
+const fmt=s=>{const{y,m,d}=parse(s);return pad(d)+"."+pad(m+1)+"."+y};
+function deadline(dateStr,tr,dir,time){
+  const{y,m,d}=parse(dateStr),[h,mi]=time.split(":").map(Number);
+  if(tr==="car")return new Date(at(y,m,d,h,mi).getTime()-24*3600e3);
+  return at(y,m,d-(dir==="fri"?2:3),18,0);
+}
+const groupKey=r=>r.tr==="car"?[r.date,r.dir,"car",r.time.replace(":","")].join("_"):[r.date,r.dir,"train"].join("_");
+function groupRows(rows){const g={};rows.forEach(r=>{(g[groupKey(r)]=g[groupKey(r)]||[]).push(r)});return g}
+const dateTime=d=>{const x=new Date(d.getTime()+TZ*3600e3);return pad(x.getUTCDate())+"."+pad(x.getUTCMonth()+1)+" "+pad(x.getUTCHours())+":"+pad(x.getUTCMinutes())};
+const sortRows=l=>l.slice().sort((a,b)=>a.time.localeCompare(b.time)||a.cls.localeCompare(b.cls)||a.name.localeCompare(b.name));
+function waText(rows){
+  const f=rows[0],list=sortRows(rows);
+  const head=TRN[f.tr]+" | "+DIRS[f.dir]+" | "+fmt(f.date)+(f.tr==="car"?" "+f.time:"")+" | всего: "+list.length;
+  const cols="ФИО | Класс | Время | Телефон | "+(f.tr==="car"?"Адрес | ":"Доверенность | ")+"Направление";
+  const lines=list.map((r,i)=>(i+1)+". "+[r.name,r.cls,r.time,r.phone,f.tr==="car"?r.addr:r.poa,DIRS[r.dir]].join(" | "));
+  return head+"\n"+cols+"\n"+lines.join("\n");
+}
+//PURE-END
+const L={
+ru:{lPin:"PIN-код (4 цифры)",pinHint:"Придумайте и запомните его: он нужен, чтобы изменить или отменить запись",find:"Найти мои записи",phPin:"••••",eAuth:"Введите телефон и PIN-код",ePin:"PIN-код должен состоять из 4 цифр",ePinWrong:"Неверный PIN-код",eLocked:"Слишком много неверных попыток. Повторите через 15 минут",none:"Записей не найдено",eNet:"Нет связи с сервером. Повторите позже",sub:"Запись ребёнка на машину или электричку",introH:"Как пользоваться сайтом",
+i1:"Выберите направление, вид транспорта, дату и время выезда.",
+i2:"Для машины выберите общую точку ({p1} тг) или укажите свой адрес ({p2} тг). Для электрички отметьте, есть ли доверенность.",
+i3:"Впишите ФИО ребёнка, класс и контактный номер родителя, нажмите «Записать».",
+i4:"По записям организаторы формируют списки для водителей и билетов на электричку.",
+i5:"Приём записей закрывается: на машину — за 24 часа до выезда; на электричку в пятницу — в среду в 18:00, на воскресенье — в четверг в 18:00. После дедлайна запись возможна только на следующие даты.",
+i6:"Изменить время или транспорт, а также отменить запись можно самостоятельно в разделе «Мои записи» — до наступления дедлайна.",
+newRec:"Новая запись",editRec:"Изменение записи",save:"Записать",saveEdit:"Сохранить изменения",cancelEdit:"Отменить редактирование",
+lDir:"Направление",lTr:"Вид транспорта",car:"🚗 Машина",train:"🚆 Электричка",lDate:"Дата",lTime:"Время выезда",
+lTo:"Куда отвезти",ptPre:"Общая точка: ",own:"Свой адрес",lAddr:"Адрес (улица, дом, квартира)",phAddr:"Например: ул. Кенесары 40, кв. 12",
+cost:"Стоимость: ",tg:" тг",lPoa:"Имеется ли доверенность?",yes:"Да",no:"Нет",
+lName:"ФИО ребёнка",phName:"Например: Серикбаев Алихан Нурланович",lCls:"Класс",lPhone:"Контактный номер родителя",
+closed:"закрыто",eName:"Укажите ФИО ребёнка полностью",ePhone:"Укажите корректный номер телефона",eClosed:"Запись на это время закрыта, выберите другую дату",
+eAddr:"Укажите адрес",ePoa:"Укажите, есть ли доверенность",eDb:"Сервис записи недоступен. Откройте страницу по ссылке в приложении Claude",
+eExp:"Срок изменения этой записи истёк",eSave:"Не удалось сохранить: ",done:"Готово! ",changed:"Запись изменена: ",at:" в ",
+mineH:"Мои записи",mineNote:"Изменить или отменить запись можно до её дедлайна. После дедлайна список уже сформирован — обратитесь к организатору.",
+edit:"Изменить",cancel:"Отменить запись",sure:"Точно отменить?",poaIs:"доверенность: ",locked:"🔒 Приём изменений закрыт (дедлайн ",title:"Развозка Burabay IT BIL"},
+kz:{lPin:"PIN-код (4 сан)",pinHint:"Ойлап тауып, есте сақтаңыз: жазбаны өзгерту немесе болдырмау үшін қажет",find:"Жазбаларымды табу",phPin:"••••",eAuth:"Телефон мен PIN-кодты енгізіңіз",ePin:"PIN-код 4 саннан тұруы керек",ePinWrong:"PIN-код қате",eLocked:"Қате әрекет тым көп. 15 минуттан кейін қайталаңыз",none:"Жазбалар табылмады",eNet:"Серверге қосылу мүмкін болмады. Кейінірек қайталаңыз",sub:"Баланы көлікке немесе электричкаға жазу",introH:"Сайтты қалай пайдалану керек",
+i1:"Бағытты, көлік түрін, күнді және жүру уақытын таңдаңыз.",
+i2:"Көлікке ортақ нүктені ({p1} тг) таңдаңыз немесе өз мекенжайыңызды ({p2} тг) көрсетіңіз. Электричкаға сенімхат бар-жоғын белгілеңіз.",
+i3:"Баланың аты-жөнін, сыныбын және ата-ананың байланыс нөмірін жазып, «Жазылу» түймесін басыңыз.",
+i4:"Жазылымдар бойынша ұйымдастырушылар жүргізушілерге арналған тізімдерді және электричка билеттерін дайындайды.",
+i5:"Жазылу мерзімі: көлікке — жүруге дейін 24 сағат бұрын; жұма күнгі электричкаға — сәрсенбі сағат 18:00-ге дейін, жексенбі күніне — бейсенбі сағат 18:00-ге дейін. Мерзім өткен соң тек келесі күндерге жазылуға болады.",
+i6:"Уақытты немесе көлік түрін өзгертуге, сондай-ақ жазылымды болдырмауға «Менің жазбаларым» бөлімінде мерзім аяқталғанға дейін өзіңіз өзгерте аласыз.",
+newRec:"Жаңа жазба",editRec:"Жазбаны өзгерту",save:"Жазылу",saveEdit:"Өзгерістерді сақтау",cancelEdit:"Өзгертуден бас тарту",
+lDir:"Бағыты",lTr:"Көлік түрі",car:"🚗 Көлік",train:"🚆 Электричка",lDate:"Күні",lTime:"Жүру уақыты",
+lTo:"Қайда апару керек",ptPre:"Ортақ нүкте: ",own:"Өз мекенжайым",lAddr:"Мекенжай (көше, үй, пәтер)",phAddr:"Мысалы: Кенесары к-сі 40, 12 пәтер",
+cost:"Құны: ",tg:" тг",lPoa:"Сенімхат бар ма?",yes:"Иә",no:"Жоқ",
+lName:"Баланың аты-жөні",phName:"Мысалы: Серікбаев Алихан Нұрланұлы",lCls:"Сыныбы",lPhone:"Ата-ананың байланыс нөмірі",
+closed:"жабық",eName:"Баланың аты-жөнін толық жазыңыз",ePhone:"Телефон нөмірін дұрыс жазыңыз",eClosed:"Бұл уақытқа жазылу жабылған, басқа күнді таңдаңыз",
+eAddr:"Мекенжайды жазыңыз",ePoa:"Сенімхат бар-жоғын көрсетіңіз",eDb:"Жазылу қызметі қолжетімсіз. Бетті Claude қосымшасындағы сілтеме арқылы ашыңыз",
+eExp:"Бұл жазбаны өзгерту мерзімі өтіп кетті",eSave:"Сақтау мүмкін болмады: ",done:"Дайын! ",changed:"Жазба өзгертілді: ",at:", ",
+mineH:"Менің жазбаларым",mineNote:"Жазбаны өзгертуге немесе болдырмауға оның мерзімі аяқталғанға дейін болады. Мерзімнен кейін тізім дайын болады — ұйымдастырушыға хабарласыңыз.",
+edit:"Өзгерту",cancel:"Жазбаны болдырмау",sure:"Шынымен болдырмау керек пе?",poaIs:"сенімхат: ",locked:"🔒 Өзгертуге жабық (мерзімі ",title:"Burabay IT BIL — оқушыларды тасымалдау"}
+};
+let lang="ru";try{lang=localStorage.getItem("lang")||"ru"}catch(e){}
+if(!L[lang])lang="ru";
+const t=k=>L[lang][k];
+const $=id=>document.getElementById(id);
+const st={dir:"fri",tr:"car",poa:""};
+const ptName=a=>{const i=POINTS.indexOf(a);return i>=0?PTL[lang][i]:a};
+const trL=k=>t(k);
+const dirLbl={fri:"Щучинск → Астана",sun:"Астана → Щучинск"};
+function applyLang(){
+  document.documentElement.lang=lang==="kz"?"kk":"ru";
+  document.title=t("title");$("h1").textContent=t("title");
+  document.querySelectorAll("[data-i]").forEach(e=>{
+    let s=t(e.dataset.i);if(s===undefined)return;
+    s=s.replace("{p1}",PRICE.point.toLocaleString("ru-RU")).replace("{p2}",PRICE.own.toLocaleString("ru-RU"));e.textContent=s});
+  document.querySelectorAll("[data-ph]").forEach(e=>e.placeholder=t(e.dataset.ph));
+  document.querySelectorAll("#lang button").forEach(b=>b.classList.toggle("on",b.dataset.v===lang));
+  const cur=$("pt").value;$("pt").innerHTML="";
+  POINTS.forEach((p,i)=>$("pt").add(new Option(t("ptPre")+PTL[lang][i],p)));$("pt").add(new Option(t("own"),"own"));
+  if(cur)$("pt").value=cur;
+  $("formTitle").textContent=t(EDIT?"editRec":"newRec");$("send").textContent=t(EDIT?"saveEdit":"save");
+  price();fillTimes();renderMine();
+}
+function open(dateStr,time){return Date.now()<deadline(dateStr,st.tr,st.dir,time).getTime()}
+function fillDates(){
+  const el=$("date"),any=s=>SLOTS[st.dir][st.tr].some(x=>open(s,x));
+  el.min=new Date(Date.now()+TZ*3600e3).toISOString().slice(0,10);
+  if(!el.value||!any(el.value)){
+    const n=new Date(Date.now()+TZ*3600e3);
+    for(let i=0;i<120;i++){const s=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate()+i)).toISOString().slice(0,10);if(any(s)){el.value=s;break}}
+  }
+  fillTimes();
+}
+function fillTimes(){
+  const sel=$("time"),keep=sel.value;sel.innerHTML="";
+  SLOTS[st.dir][st.tr].forEach(x=>{const ok=open($("date").value,x);const o=new Option(x+(ok?"":" — "+t("closed")),x);o.disabled=!ok;sel.add(o)});
+  const k=[...sel.options].find(o=>o.value===keep&&!o.disabled)||[...sel.options].find(o=>!o.disabled);if(k)sel.value=k.value;
+}
+function mark(){
+  document.querySelectorAll("#dir button,#tr button,#poa button").forEach(b=>{b.classList.toggle("on",st[b.parentNode.id]===b.dataset.v)});
+  $("carBox").hidden=st.tr!=="car";$("trainBox").hidden=st.tr!=="train";
+}
+function price(){
+  const own=$("pt").value==="own";$("ownBox").hidden=!own;
+  $("price").textContent=t("cost")+(own?PRICE.own:PRICE.point).toLocaleString("ru-RU")+t("tg");
+}
+["dir","tr","poa"].forEach(id=>{$(id).onclick=e=>{const b=e.target.closest("button");if(!b)return;st[id]=b.dataset.v;mark();if(id!=="poa")fillDates()}});
+$("pt").onchange=price;$("date").onchange=fillTimes;
+//MASK-START
+function maskPhone(v){
+  let d=String(v).replace(/\D/g,"");
+  if(d.length>10&&(d[0]==="7"||d[0]==="8"))d=d.slice(1);
+  d=d.slice(0,10);
+  let s=d?"("+d.slice(0,3):"";
+  if(d.length>3)s+=") "+d.slice(3,6);
+  if(d.length>6)s+=" "+d.slice(6,8);
+  if(d.length>8)s+=" "+d.slice(8,10);
+  return s;
+}
+//MASK-END
+$("phone").oninput=e=>{e.target.value=maskPhone(e.target.value)};
+$("lang").onclick=e=>{const b=e.target.closest("button");if(!b)return;lang=b.dataset.v;try{localStorage.setItem("lang",lang)}catch(x){}applyLang()};
+
+let EDIT=null,MINE=[],AUTH=null,CONFIRM="";
+const CFG=window.CFG||{};
+async function rpc(fn,args){
+  let r;try{r=await fetch(CFG.URL+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:CFG.KEY,Authorization:"Bearer "+CFG.KEY,"Content-Type":"application/json"},body:JSON.stringify(args)})}catch(e){throw new Error("net")}
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error("net");
+  if(j&&j.error)throw new Error(j.error);
+  return j;
+}
+const ERR={bad_pin:"ePin",pin_wrong:"ePinWrong",locked:"eLocked",closed:"eClosed",locked_rec:"eExp",addr:"eAddr",poa:"ePoa",bad_data:"eName",bad_phone:"ePhone",net:"eNet"};
+const errText=e=>ERR[e.message]?t(ERR[e.message]):t("eSave")+e.message;
+const digits=v=>String(v).replace(/\D/g,"");
+const msg=(s,c)=>{$("msg").innerHTML="";const d=document.createElement("div");d.className=c;d.textContent=s;$("msg").append(d)};
+$("mPhone").oninput=e=>{e.target.value=maskPhone(e.target.value)};
+$("send").onclick=async()=>{
+  const name=$("name").value.trim().replace(/\s+/g," "),phone=$("phone").value.trim(),pin=$("pin").value,date=$("date").value,time=$("time").value;
+  if(name.split(" ").length<2)return msg(t("eName"),"err");
+  if(digits(phone).length!==10)return msg(t("ePhone"),"err");
+  if(!/^\d{4}$/.test(pin))return msg(t("ePin"),"err");
+  if(!date||!time||!open(date,time))return msg(t("eClosed"),"err");
+  let addr="",pr=0,poa="";
+  if(st.tr==="car"){
+    if($("pt").value==="own"){addr=$("addr").value.trim();if(addr.length<5)return msg(t("eAddr"),"err");pr=PRICE.own}
+    else{addr=$("pt").value;pr=PRICE.point}
+  }else{if(!st.poa)return msg(t("ePoa"),"err");poa=st.poa}
+  if(EDIT&&Date.now()>=deadline(EDIT.date,EDIT.tr,EDIT.dir,EDIT.time).getTime())return msg(t("eExp"),"err");
+  const editing=!!EDIT;
+  $("send").disabled=true;
+  try{
+    await rpc("upsert_signup",{p_id:editing?EDIT.id:null,p_phone:digits(phone),p_pin:pin,p_data:{dir:st.dir,tr:st.tr,date,time,name,cls:$("num").value+$("let").value,addr,poa}});
+    msg(t(editing?"changed":"done")+name+", "+fmt(date)+t("at")+time+", "+trL(st.tr)+(pr?", "+pr+t("tg"):""),"ok");
+    if(editing)exitEdit();
+    $("name").value="";$("mPhone").value=maskPhone(phone);$("mPin").value=pin;loadMine();
+  }catch(e){msg(errText(e),"err")}
+  $("send").disabled=false;
+};
+async function loadMine(){
+  const p=digits($("mPhone").value),pin=$("mPin").value;
+  if(p.length!==10||!/^\d{4}$/.test(pin)){$("mineMsg").textContent=t("eAuth");return}
+  try{const j=await rpc("my_signups",{p_phone:p,p_pin:pin});AUTH={phone:p,pin};MINE=j.rows||[];renderMine();$("mineMsg").textContent=MINE.length?"":t("none")}
+  catch(e){MINE=[];AUTH=null;renderMine();$("mineMsg").textContent=errText(e)}
+}
+$("find").onclick=loadMine;
+function exitEdit(){EDIT=null;$("formTitle").textContent=t("newRec");$("send").textContent=t("save");$("cancelEdit").hidden=true;$("name").value=""}
+$("cancelEdit").onclick=()=>{exitEdit();msg("","")};
+function startEdit(r){
+  EDIT=r;st.dir=r.dir;st.tr=r.tr;st.poa=r.poa||"";mark();fillDates();
+  $("date").value=r.date;fillTimes();$("time").value=r.time;
+  if(r.tr==="car"){const own=!POINTS.includes(r.addr);$("pt").value=own?"own":r.addr;$("addr").value=own?r.addr:"";price()}
+  $("name").value=r.name;$("num").value=r.cls.slice(0,-1);$("let").value=r.cls.slice(-1);
+  $("phone").value=maskPhone(AUTH.phone);$("pin").value=AUTH.pin;
+  $("formTitle").textContent=t("editRec");$("send").textContent=t("saveEdit");$("cancelEdit").hidden=false;msg("","");
+  $("form").scrollIntoView({behavior:"smooth"});
+}
+function renderMine(){
+  const box=$("mineList");box.innerHTML="";
+  MINE.slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).forEach(r=>{
+    const can=Date.now()<deadline(r.date,r.tr,r.dir,r.time).getTime();
+    const d=document.createElement("div");d.style.cssText="border-top:1px solid var(--b);padding:10px 0";
+    const h=document.createElement("b");h.textContent=r.name+" ("+r.cls+")";
+    const s=document.createElement("div");s.className="m";
+    s.textContent=trL(r.tr)+" · "+dirLbl[r.dir]+" · "+fmt(r.date)+" "+r.time+(r.tr==="car"?" · "+ptName(r.addr)+" · "+r.price+t("tg"):" · "+t("poaIs")+(r.poa==="Да"?t("yes"):t("no")));
+    d.append(h,s);
+    if(can){
+      const e=document.createElement("button");e.className="sm";e.textContent=t("edit");e.onclick=()=>startEdit(r);
+      const x=document.createElement("button");x.className="sm";x.textContent=CONFIRM===r.id?t("sure"):t("cancel");
+      x.onclick=async()=>{
+        if(CONFIRM!==r.id){CONFIRM=r.id;renderMine();return}
+        CONFIRM="";
+        try{await rpc("cancel_signup",{p_id:r.id,p_phone:AUTH.phone,p_pin:AUTH.pin});if(EDIT&&EDIT.id===r.id)exitEdit()}catch(err){$("mineMsg").textContent=errText(err)}
+        loadMine();
+      };
+      d.append(e,x);
+    }else{const l=document.createElement("div");l.className="m";l.textContent=t("locked")+dateTime(deadline(r.date,r.tr,r.dir,r.time))+")";d.append(l)}
+    box.append(d);
+  });
+}
+mark();applyLang();fillDates();
+</script></body></html>
