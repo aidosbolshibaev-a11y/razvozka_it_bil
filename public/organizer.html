@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Списки организатора — Развозка</title>
+  <link rel="stylesheet" href="organizer.css">
+  <script src="config.js" defer></script>
+  <script src="xlsx.js" defer></script>
+  <script src="organizer.js" defer></script>
+</head>
+<body>
+  <main>
+    <a href="index.html">← Запись на развозку</a>
+    <h1>Списки организатора</h1>
+    <p>Сверьте адреса в Астане самостоятельно и поставьте отметки. Сайт не проверяет адреса по картам.</p>
+    <section class="panel" id="login-panel" aria-labelledby="login-title">
+      <h2 id="login-title">Вход организатора</h2>
+      <p>Вход по учётной записи Supabase, которой администратор выдал доступ организатора. Телефон и PIN родителя здесь не подходят.</p>
+      <form id="login-form">
+        <label for="email">Электронная почта</label>
+        <input id="email" type="email" autocomplete="username" required>
+        <label for="password">Пароль</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+        <button type="submit" id="login-button">Войти</button>
+      </form>
+    </section>
+    <p id="message" role="status" aria-live="polite"></p>
+    <section class="panel" id="workspace" aria-labelledby="list-title" hidden>
+      <div class="actions">
+        <h2 id="list-title">Готовый список</h2>
+        <button type="button" id="logout">Выйти</button>
+      </div>
+      <p>В списке все записи на выбранную дату, включая рейсы с открытой записью. Пока запись открыта, список может измениться.</p>
+      <form id="filters">
+        <label for="trip-date">Дата поездки</label>
+        <input id="trip-date" type="date" required>
+        <label for="direction">Направление</label>
+        <select id="direction">
+          <option value="">Все направления</option>
+          <option value="fri">Щучинск → Астана</option>
+          <option value="sun">Астана → Щучинск</option>
+        </select>
+        <label for="transport">Транспорт</label>
+        <select id="transport">
+          <option value="">Весь транспорт</option>
+          <option value="car">Машина</option>
+          <option value="train">Электричка</option>
+        </select>
+        <button type="submit" id="load">Показать список</button>
+      </form>
+      <p>Отметки сохраняются только в этом браузере. Очистка данных браузера удалит их. После обновления страницы нужно войти заново.</p>
+      <p id="storage-warning" role="alert" hidden>Отметки не сохранятся: локальное хранилище недоступно или повреждено.</p>
+      <div class="actions">
+        <p id="count" aria-live="polite"></p>
+        <button type="button" id="export">Выгрузить для Excel</button>
+      </div>
+      <p>Выгружается показанный список в XLSX. Изменения в файле не обновляют сайт. Храните файл со списком в месте с ограниченным доступом.</p>
+      <ol id="records"></ol>
+    </section>
+  </main>
+</body>
+</html>
