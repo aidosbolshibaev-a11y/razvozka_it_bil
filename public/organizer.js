@@ -98,6 +98,13 @@
         const error = new Error("Нет доступа. Проверьте вход и право организатора у администратора.");
         error.denied = true; throw error;
       }
+      if (path.startsWith("/auth/") && response.status === 400) {
+        throw new Error("Не удалось войти. Проверьте почту и пароль. Учётная запись должна быть подтверждена в Supabase.");
+      }
+      if (response.status === 429) throw new Error("Слишком много попыток. Подождите и повторите вход позже.");
+      if (path.startsWith("/rest/v1/rpc/") && response.status === 404) {
+        throw new Error("Доступ организатора ещё не настроен: администратору нужно применить миграцию 0003_organizer_lists.sql.");
+      }
       if (!response.ok) throw new Error("Не удалось выполнить запрос. Проверьте настройки и повторите позже.");
       return response.json();
     }
@@ -146,10 +153,9 @@
     $("login-form").addEventListener("submit", async event => {
       event.preventDefault();
       if (busy) return;
+      const password = $("password").value;
       clearSession();
       const operation = ++generation;
-      const password = $("password").value;
-      $("password").value = "";
       setBusy(true); message("Вход…");
       try {
         if (!config.URL || !config.KEY) throw new Error("Не настроена публичная конфигурация Supabase.");

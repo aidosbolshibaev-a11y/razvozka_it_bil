@@ -105,6 +105,7 @@ test('UI: login, role-checked list, local status change, safe XLSX download and 
   const h = harness(); await h.login();
   assert.equal(h.nodes.workspace.hidden, false);
   assert.equal(h.calls.length, 2);
+  assert.equal(JSON.parse(h.calls[0].options.body).password, 'fictional-password');
   assert.equal(h.calls[1].options.headers.Authorization, 'Bearer fictional-token');
   const record = h.nodes.records.children[0];
   const select = record.children.find(child => child.id === 'address-status-0');
@@ -124,6 +125,23 @@ test('UI: valid user without organizer role cannot reveal workspace or download'
   assert.equal(h.nodes.workspace.hidden, true); assert.equal(h.nodes.records.children.length, 0);
   assert.match(h.nodes.message.textContent, /Нет доступа/);
   await h.nodes.export.fire('click'); assert.equal(h.downloads(), 0);
+});
+test('UI: incorrect credentials explain login failure and clear the password field', async () => {
+  const h = harness();
+  h.responses.push(h.response({}, 400));
+  await h.nodes['login-form'].fire('submit');
+  assert.match(h.nodes.message.textContent, /Проверьте почту и пароль/);
+  assert.equal(h.nodes.password.value, '');
+  assert.equal(h.nodes.workspace.hidden, true);
+  assert.equal(h.nodes['login-button'].disabled, false);
+});
+test('UI: missing organizer RPC explains that migration 0003 is required', async () => {
+  const h = harness();
+  h.responses.push(h.response({ access_token: 'fictional-token', user: { id: 'fictional-organizer' }, expires_in: 3600 }), h.response({}, 404));
+  await h.nodes['login-form'].fire('submit');
+  assert.match(h.nodes.message.textContent, /0003_organizer_lists.sql/);
+  assert.equal(h.nodes.workspace.hidden, true);
+  assert.equal(h.nodes['login-button'].disabled, false);
 });
 test('UI: empty list, filter changes and failed reload never export stale records', async () => {
   const h = harness(); await h.login([]);
