@@ -1,0 +1,11 @@
+.location-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.location-actions button{min-width:44px;min-height:44px;padding:10px 12px;border:1px solid var(--b);border-radius:8px;color:var(--t);background:var(--bg);font:inherit;cursor:pointer}
+#location-map{position:relative;overflow:hidden;height:340px;width:100%;background:#e7edf0;touch-action:none;border:1px solid var(--b);border-radius:10px;cursor:grab}
+#location-map:active{cursor:grabbing}
+#location-tiles{position:absolute;inset:0;pointer-events:none}
+#location-tiles img{position:absolute;width:256px;height:256px;max-width:none;user-select:none}
+.location-crosshair{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:bold 40px/1 system-ui;color:#b31528;text-shadow:0 0 3px white;pointer-events:none}
+.location-value{overflow-wrap:anywhere;font-weight:600}
+#location-confirm:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--a);outline-offset:3px}
+button,input,select{min-height:44px;min-width:44px}

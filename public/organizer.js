@@ -2,10 +2,14 @@
   "use strict";
   const STATUSES = { unchecked: "Не проверено", checked: "Проверено", missing: "Не найдено" };
   const DIRS = { fri: "Щучинск → Астана", sun: "Астана → Щучинск" };
-  const TRANSPORT = { car: "Машина", train: "Электричка" };
-  const HEADERS = ["№", "ФИО", "Класс", "Дата поездки", "Направление", "Транспорт", "Время", "Телефон", "Адрес", "Статус проверки адреса", "Доверенность", "Цена"];
+  const TRANSPORT = { car: "Машина" };
+  const HEADERS = ["№", "ФИО", "Класс", "Дата поездки", "Направление", "Транспорт", "Время", "Телефон", "Адрес", "Статус проверки адреса", "Цена"];
   const needsCheck = row => row.tr === "car" && Boolean(row.addr && row.addr.trim());
-  const fingerprint = row => JSON.stringify([row.date, row.dir, row.tr, row.time, row.addr]);
+  const fingerprint = row => {
+    const fields = [row.date, row.dir, row.tr, row.time, row.addr];
+    if (Number.isFinite(row.delivery_lat) && Number.isFinite(row.delivery_lon)) fields.push(row.delivery_lat,row.delivery_lon);
+    return JSON.stringify(fields);
+  };
   const formatDate = value => String(value).split("-").reverse().join(".");
   const today = () => new Date(Date.now() + 5 * 3600000).toISOString().slice(0, 10);
 
@@ -56,7 +60,7 @@
   function exportRows(rows, store) {
     return [HEADERS, ...rows.map((row, i) => [
       i + 1, row.name, row.cls, formatDate(row.date), DIRS[row.dir], TRANSPORT[row.tr],
-      row.time, String(row.phone), row.addr, statusText(row, store), row.poa,
+      row.time, String(row.phone), row.addr + (row.delivery_note ? " · Примечание: " + row.delivery_note : ""), statusText(row, store),
       Number(row.price)
     ])];
   }
@@ -68,7 +72,7 @@
     $("trip-date").value = today();
     function setBusy(value) {
       busy = value;
-      for (const id of ["login-button", "load", "export", "trip-date", "direction", "transport"]) $(id).disabled = value;
+      for (const id of ["login-button", "load", "export", "trip-date", "direction"]) $(id).disabled = value;
     }
     function clearList() {
       rows = []; loadedDate = "";
@@ -111,10 +115,10 @@
     async function readList(auth, filters) {
       const result = await request("/rest/v1/rpc/organizer_signups", filters, auth.token);
       if (!result || !Array.isArray(result.rows)) throw new Error("Сервер вернул некорректный список.");
-      return Promise.all(result.rows.map(async row => ({ ...row, addressDigest: await digest(fingerprint(row)) })));
+      return Promise.all(result.rows.filter(row => row.tr === "car").map(async row => ({ ...row, addressDigest: await digest(fingerprint(row)) })));
     }
     function filters() {
-      return { p_date: $("trip-date").value, p_dir: $("direction").value || null, p_tr: $("transport").value || null };
+      return { p_date: $("trip-date").value, p_dir: $("direction").value || null, p_tr: "car" };
     }
     function render() {
       $("records").replaceChildren();
@@ -126,9 +130,16 @@
         const trip = document.createElement("p"); trip.textContent = formatDate(row.date) + " · " + DIRS[row.dir] + " · " + TRANSPORT[row.tr] + " · " + row.time;
         const contact = document.createElement("p"); contact.textContent = "Телефон: " + row.phone;
         const detail = document.createElement("p");
-        detail.textContent = row.tr === "car" ? "Цена: " + Number(row.price).toLocaleString("ru-RU") + " ₸" : "Доверенность: " + row.poa;
+        detail.textContent = "Цена: " + Number(row.price).toLocaleString("ru-RU") + " ₸";
         const address = document.createElement("p"); address.className = "record-address"; address.textContent = "Адрес: " + (row.addr || "Не требуется");
         item.append(heading, trip, contact, detail, address);
+        const location = root.RazvozkaLocation || (typeof require === "function" ? require("./location-picker.js") : null);
+        const href = location?.osmURL({lat:row.delivery_lat,lon:row.delivery_lon});
+        if (href) {
+          const link = document.createElement("a");link.href=href;link.target="_blank";link.rel="noopener";link.textContent="Открыть точку, выбранную родителем ↗";item.append(link);
+        }
+        if (row.delivery_note) {const note=document.createElement("p");note.textContent="Примечание родителя: "+row.delivery_note;item.append(note);}
+
         if (needsCheck(row)) {
           const label = document.createElement("label"), select = document.createElement("select");
           select.id = "address-status-" + index;

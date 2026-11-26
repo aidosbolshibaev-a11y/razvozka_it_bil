@@ -32,7 +32,7 @@ body{min-height:100vh;background-image:linear-gradient(var(--scene-overlay),var(
 .top{padding:16px;background:var(--c);border:1px solid var(--b);border-radius:12px;margin-bottom:16px}
 main>p{padding:12px 16px;background:var(--c);border-radius:12px}
 main>p a{color:var(--a)}
-</style></head><body><main>
+</style><link rel="stylesheet" href="location-picker.css"></head><body><main>
 <div class="top">
 <div><h1 id="h1">Развозка Burabay IT BIL</h1><div class="m" data-i="sub"></div></div>
 <div class="lang" id="lang"><button data-v="kz">Қаз</button><button data-v="ru">Рус</button></div>
@@ -45,19 +45,32 @@ main>p a{color:var(--a)}
 <h2 id="formTitle"></h2>
 <label data-i="lDir"></label>
 <div class="seg" id="dir"><button data-v="fri">Щучинск → Астана</button><button data-v="sun">Астана → Щучинск</button></div>
-<label data-i="lTr"></label>
-<div class="seg" id="tr"><button data-v="car" data-i="car"></button><button data-v="train" data-i="train"></button></div>
 <label data-i="lDate"></label><input id="date" type="date">
 <label data-i="lTime"></label><select id="time"></select>
 <div id="carBox">
 <label data-i="lTo"></label>
 <select id="pt"></select>
-<div id="ownBox" hidden><label data-i="lAddr"></label><input id="addr" autocomplete="street-address" data-ph="phAddr"></div>
-<div class="price" id="price"></div>
+<div id="ownBox" hidden>
+<p class="m" data-i="locationHint"></p>
+<button type="button" id="location-load" class="sm" data-i="locationLoad"></button>
+<div id="location-map-panel" hidden>
+  <div class="location-actions">
+    <button type="button" id="location-in" data-i="locationIn"></button><button type="button" id="location-out" data-i="locationOut"></button>
+    <button type="button" id="location-west" data-i="locationWest"></button><button type="button" id="location-east" data-i="locationEast"></button>
+    <button type="button" id="location-north" data-i="locationNorth"></button><button type="button" id="location-south" data-i="locationSouth"></button>
+  </div>
+  <div id="location-map" tabindex="0" role="group" aria-labelledby="location-instructions">
+    <div id="location-tiles" aria-hidden="true"></div><span class="location-crosshair" aria-hidden="true">＋</span>
+  </div>
+  <p class="m" id="location-instructions" data-i="locationKeyboard"></p>
+  <button type="button" id="location-confirm" class="sm" data-i="locationConfirm" disabled></button>
+  <p class="m">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors · ODbL</a></p>
 </div>
-<div id="trainBox" hidden>
-<label data-i="lPoa"></label>
-<div class="seg" id="poa"><button data-v="Да" data-i="yes"></button><button data-v="Нет" data-i="no"></button></div>
+<p id="location-status" class="m" role="status" aria-live="polite"></p>
+<p id="location-value" class="location-value" role="status" aria-live="polite"></p>
+<label for="delivery-note" data-i="locationNote"></label><input id="delivery-note" maxlength="200" autocomplete="off">
+</div>
+<div class="price" id="price"></div>
 </div>
 <label data-i="lName"></label><input id="name" autocomplete="off" data-ph="phName">
 <label data-i="lCls"></label>
@@ -80,77 +93,77 @@ main>p a{color:var(--a)}
 <p><a href="organizer.html">Организатору / Ұйымдастырушыға</a></p>
 </main>
 <script src="config.js"></script>
+<script src="location-picker.js"></script>
 <script>
 //PURE-START
 const TZ=5, WA_DEFAULT="";
 const PRICE={own:6500,point:5500};
 const POINTS=["Точка 1","Точка 2"];
 const PTL={ru:["Точка 1","Точка 2"],kz:["1-нүкте","2-нүкте"]};
-const SLOTS={fri:{car:["14:00","16:00"],train:["14:20","15:35"]},sun:{car:["14:00","16:00"],train:["10:10"]}};
+const SLOTS={fri:{car:["14:00","16:00"]},sun:{car:["14:00","16:00"]}};
 const DIRS={fri:"Щучинск → Астана",sun:"Астана → Щучинск"};
-const TRN={car:"🚗 Машина",train:"🚆 Электричка"};
+const TRN={car:"🚗 Машина"};
 const pad=n=>String(n).padStart(2,"0");
 const parse=s=>{const[y,m,d]=s.split("-").map(Number);return{y,m:m-1,d}};
 const at=(y,m,d,h,mi)=>new Date(Date.UTC(y,m,d,h-TZ,mi));
 const fmt=s=>{const{y,m,d}=parse(s);return pad(d)+"."+pad(m+1)+"."+y};
 function deadline(dateStr,tr,dir,time){
   const{y,m,d}=parse(dateStr),[h,mi]=time.split(":").map(Number);
-  if(tr==="car")return new Date(at(y,m,d,h,mi).getTime()-24*3600e3);
-  return at(y,m,d-(dir==="fri"?2:3),18,0);
+  return new Date(at(y,m,d,h,mi).getTime()-24*3600e3);
 }
-const groupKey=r=>r.tr==="car"?[r.date,r.dir,"car",r.time.replace(":","")].join("_"):[r.date,r.dir,"train"].join("_");
+const groupKey=r=>[r.date,r.dir,"car",r.time.replace(":","")].join("_");
 function groupRows(rows){const g={};rows.forEach(r=>{(g[groupKey(r)]=g[groupKey(r)]||[]).push(r)});return g}
 const dateTime=d=>{const x=new Date(d.getTime()+TZ*3600e3);return pad(x.getUTCDate())+"."+pad(x.getUTCMonth()+1)+" "+pad(x.getUTCHours())+":"+pad(x.getUTCMinutes())};
 const sortRows=l=>l.slice().sort((a,b)=>a.time.localeCompare(b.time)||a.cls.localeCompare(b.cls)||a.name.localeCompare(b.name));
 function waText(rows){
   const f=rows[0],list=sortRows(rows);
-  const head=TRN[f.tr]+" | "+DIRS[f.dir]+" | "+fmt(f.date)+(f.tr==="car"?" "+f.time:"")+" | всего: "+list.length;
-  const cols="ФИО | Класс | Время | Телефон | "+(f.tr==="car"?"Адрес | ":"Доверенность | ")+"Направление";
-  const lines=list.map((r,i)=>(i+1)+". "+[r.name,r.cls,r.time,r.phone,f.tr==="car"?r.addr:r.poa,DIRS[r.dir]].join(" | "));
+  const head=TRN[f.tr]+" | "+DIRS[f.dir]+" | "+fmt(f.date)+(" "+f.time)+" | всего: "+list.length;
+  const cols="ФИО | Класс | Время | Телефон | "+"Адрес | "+"Направление";
+  const lines=list.map((r,i)=>(i+1)+". "+[r.name,r.cls,r.time,r.phone,r.addr,DIRS[r.dir]].join(" | "));
   return head+"\n"+cols+"\n"+lines.join("\n");
 }
 //PURE-END
 const L={
-ru:{lPin:"PIN-код (4 цифры)",pinHint:"Придумайте и запомните его: он нужен, чтобы изменить или отменить запись",find:"Найти мои записи",phPin:"••••",eAuth:"Введите телефон и PIN-код",ePin:"PIN-код должен состоять из 4 цифр",ePinWrong:"Неверный PIN-код",eLocked:"Слишком много неверных попыток. Повторите через 15 минут",none:"Записей не найдено",eNet:"Нет связи с сервером. Повторите позже",sub:"Запись ребёнка на машину или электричку",introH:"Как пользоваться сайтом",
-i1:"Выберите направление, вид транспорта, дату и время выезда.",
-i2:"Для машины выберите общую точку ({p1} тг) или укажите свой адрес ({p2} тг). Для электрички отметьте, есть ли доверенность.",
+ru:{locationHint:"Выберите здание на карте. Подтвердите метку у нужного входа; улицу вручную вводить не требуется.",locationLoad:"Открыть / обновить карту",locationIn:"Масштаб +",locationOut:"Масштаб −",locationWest:"Запад",locationEast:"Восток",locationNorth:"Север",locationSouth:"Юг",locationConfirm:"Подтвердить метку у здания",locationKeyboard:"Можно нажать на здание, перетащить карту или двигать её стрелками клавиатуры. + и − меняют масштаб. Красный крест — будущая точка доставки.",locationNote:"Подъезд или ориентир (необязательно)",eLocation:"Приблизьте здание на карте и подтвердите метку.",archive:"Архивная запись: изменения закрыты",lPin:"PIN-код (4 цифры)",pinHint:"Придумайте и запомните его: он нужен, чтобы изменить или отменить запись",find:"Найти мои записи",phPin:"••••",eAuth:"Введите телефон и PIN-код",ePin:"PIN-код должен состоять из 4 цифр",ePinWrong:"Неверный PIN-код",eLocked:"Слишком много неверных попыток. Повторите через 15 минут",none:"Записей не найдено",eNet:"Нет связи с сервером. Повторите позже",sub:"Запись ребёнка на машину",introH:"Как пользоваться сайтом",
+i1:"Выберите направление, дату и время выезда машины.",
+i2:"Выберите общую точку ({p1} тг) или подтвердите свою точку доставки на карте ({p2} тг).",
 i3:"Впишите ФИО ребёнка, класс и контактный номер родителя, нажмите «Записать».",
-i4:"По записям организаторы формируют списки для водителей и билетов на электричку.",
-i5:"Приём записей закрывается: на машину — за 24 часа до выезда; на электричку в пятницу — в среду в 18:00, на воскресенье — в четверг в 18:00. После дедлайна запись возможна только на следующие даты.",
-i6:"Изменить время или транспорт, а также отменить запись можно самостоятельно в разделе «Мои записи» — до наступления дедлайна.",
+i4:"Организаторы получают записи и выбранные точки доставки для водителей.",
+i5:"Приём записей закрывается за 24 часа до выезда машины. После дедлайна выбирайте следующие даты.",
+i6:"Изменить время или точку доставки, а также отменить запись можно самостоятельно в разделе «Мои записи» — до наступления дедлайна.",
 newRec:"Новая запись",editRec:"Изменение записи",save:"Записать",saveEdit:"Сохранить изменения",cancelEdit:"Отменить редактирование",
-lDir:"Направление",lTr:"Вид транспорта",car:"🚗 Машина",train:"🚆 Электричка",lDate:"Дата",lTime:"Время выезда",
+lDir:"Направление",lTr:"Вид транспорта",car:"🚗 Машина",lDate:"Дата",lTime:"Время выезда",
 lTo:"Куда отвезти",ptPre:"Общая точка: ",own:"Свой адрес",lAddr:"Адрес (улица, дом, квартира)",phAddr:"Например: ул. Кенесары 40, кв. 12",
-cost:"Стоимость: ",tg:" тг",lPoa:"Имеется ли доверенность?",yes:"Да",no:"Нет",
+cost:"Стоимость: ",tg:" тг",yes:"Да",no:"Нет",
 lName:"ФИО ребёнка",phName:"Например: Серикбаев Алихан Нурланович",lCls:"Класс",lPhone:"Контактный номер родителя",
 closed:"закрыто",eName:"Укажите ФИО ребёнка полностью",ePhone:"Укажите корректный номер телефона",eClosed:"Запись на это время закрыта, выберите другую дату",
-eAddr:"Укажите адрес",ePoa:"Укажите, есть ли доверенность",eDb:"Сервис записи недоступен. Откройте страницу по ссылке в приложении Claude",
+eAddr:"Укажите адрес",eDb:"Сервис записи недоступен. Откройте страницу по ссылке в приложении Claude",
 eExp:"Срок изменения этой записи истёк",eSave:"Не удалось сохранить: ",done:"Готово! ",changed:"Запись изменена: ",at:" в ",
 mineH:"Мои записи",mineNote:"Изменить или отменить запись можно до её дедлайна. После дедлайна список уже сформирован — обратитесь к организатору.",
-edit:"Изменить",cancel:"Отменить запись",sure:"Точно отменить?",poaIs:"доверенность: ",locked:"🔒 Приём изменений закрыт (дедлайн ",title:"Развозка Burabay IT BIL"},
-kz:{lPin:"PIN-код (4 сан)",pinHint:"Ойлап тауып, есте сақтаңыз: жазбаны өзгерту немесе болдырмау үшін қажет",find:"Жазбаларымды табу",phPin:"••••",eAuth:"Телефон мен PIN-кодты енгізіңіз",ePin:"PIN-код 4 саннан тұруы керек",ePinWrong:"PIN-код қате",eLocked:"Қате әрекет тым көп. 15 минуттан кейін қайталаңыз",none:"Жазбалар табылмады",eNet:"Серверге қосылу мүмкін болмады. Кейінірек қайталаңыз",sub:"Баланы көлікке немесе электричкаға жазу",introH:"Сайтты қалай пайдалану керек",
-i1:"Бағытты, көлік түрін, күнді және жүру уақытын таңдаңыз.",
-i2:"Көлікке ортақ нүктені ({p1} тг) таңдаңыз немесе өз мекенжайыңызды ({p2} тг) көрсетіңіз. Электричкаға сенімхат бар-жоғын белгілеңіз.",
+edit:"Изменить",cancel:"Отменить запись",sure:"Точно отменить?",locked:"🔒 Приём изменений закрыт (дедлайн ",title:"Развозка Burabay IT BIL"},
+kz:{locationHint:"Картадан ғимаратты таңдаңыз. Керекті кіреберістегі белгіні растаңыз; көшені қолмен жазу қажет емес.",locationLoad:"Картаны ашу / жаңарту",locationIn:"Масштаб +",locationOut:"Масштаб −",locationWest:"Батыс",locationEast:"Шығыс",locationNorth:"Солтүстік",locationSouth:"Оңтүстік",locationConfirm:"Ғимарат жанындағы белгіні растау",locationKeyboard:"Ғимаратты басыңыз, картаны жылжытыңыз немесе пернетақта бағыттауыштарын қолданыңыз. + және − масштабты өзгертеді. Қызыл белгі — жеткізу нүктесі.",locationNote:"Кіреберіс не бағдар (міндетті емес)",eLocation:"Картадағы ғимаратты жақындатып, белгіні растаңыз.",archive:"Мұрағаттағы жазба: өзгерту жабық",lPin:"PIN-код (4 сан)",pinHint:"Ойлап тауып, есте сақтаңыз: жазбаны өзгерту немесе болдырмау үшін қажет",find:"Жазбаларымды табу",phPin:"••••",eAuth:"Телефон мен PIN-кодты енгізіңіз",ePin:"PIN-код 4 саннан тұруы керек",ePinWrong:"PIN-код қате",eLocked:"Қате әрекет тым көп. 15 минуттан кейін қайталаңыз",none:"Жазбалар табылмады",eNet:"Серверге қосылу мүмкін болмады. Кейінірек қайталаңыз",sub:"Баланы көлікке жазу",introH:"Сайтты қалай пайдалану керек",
+i1:"Бағытты, күнді және көліктің жүру уақытын таңдаңыз.",
+i2:"Ортақ нүктені ({p1} тг) немесе картада жеткізу орнын ({p2} тг) таңдаңыз.",
 i3:"Баланың аты-жөнін, сыныбын және ата-ананың байланыс нөмірін жазып, «Жазылу» түймесін басыңыз.",
-i4:"Жазылымдар бойынша ұйымдастырушылар жүргізушілерге арналған тізімдерді және электричка билеттерін дайындайды.",
-i5:"Жазылу мерзімі: көлікке — жүруге дейін 24 сағат бұрын; жұма күнгі электричкаға — сәрсенбі сағат 18:00-ге дейін, жексенбі күніне — бейсенбі сағат 18:00-ге дейін. Мерзім өткен соң тек келесі күндерге жазылуға болады.",
-i6:"Уақытты немесе көлік түрін өзгертуге, сондай-ақ жазылымды болдырмауға «Менің жазбаларым» бөлімінде мерзім аяқталғанға дейін өзіңіз өзгерте аласыз.",
+i4:"Ұйымдастырушылар жүргізушілерге жазбалар мен таңдалған жеткізу нүктелерін дайындайды.",
+i5:"Жазылу көліктің жүруіне 24 сағат қалғанда жабылады. Мерзім өткен соң келесі күндерді таңдаңыз.",
+i6:"Уақытты немесе жеткізу орнын өзгертуге, сондай-ақ жазылымды болдырмауға «Менің жазбаларым» бөлімінде мерзім аяқталғанға дейін өзіңіз өзгерте аласыз.",
 newRec:"Жаңа жазба",editRec:"Жазбаны өзгерту",save:"Жазылу",saveEdit:"Өзгерістерді сақтау",cancelEdit:"Өзгертуден бас тарту",
-lDir:"Бағыты",lTr:"Көлік түрі",car:"🚗 Көлік",train:"🚆 Электричка",lDate:"Күні",lTime:"Жүру уақыты",
+lDir:"Бағыты",lTr:"Көлік түрі",car:"🚗 Көлік",lDate:"Күні",lTime:"Жүру уақыты",
 lTo:"Қайда апару керек",ptPre:"Ортақ нүкте: ",own:"Өз мекенжайым",lAddr:"Мекенжай (көше, үй, пәтер)",phAddr:"Мысалы: Кенесары к-сі 40, 12 пәтер",
-cost:"Құны: ",tg:" тг",lPoa:"Сенімхат бар ма?",yes:"Иә",no:"Жоқ",
+cost:"Құны: ",tg:" тг",yes:"Иә",no:"Жоқ",
 lName:"Баланың аты-жөні",phName:"Мысалы: Серікбаев Алихан Нұрланұлы",lCls:"Сыныбы",lPhone:"Ата-ананың байланыс нөмірі",
 closed:"жабық",eName:"Баланың аты-жөнін толық жазыңыз",ePhone:"Телефон нөмірін дұрыс жазыңыз",eClosed:"Бұл уақытқа жазылу жабылған, басқа күнді таңдаңыз",
-eAddr:"Мекенжайды жазыңыз",ePoa:"Сенімхат бар-жоғын көрсетіңіз",eDb:"Жазылу қызметі қолжетімсіз. Бетті Claude қосымшасындағы сілтеме арқылы ашыңыз",
+eAddr:"Мекенжайды жазыңыз",eDb:"Жазылу қызметі қолжетімсіз. Бетті Claude қосымшасындағы сілтеме арқылы ашыңыз",
 eExp:"Бұл жазбаны өзгерту мерзімі өтіп кетті",eSave:"Сақтау мүмкін болмады: ",done:"Дайын! ",changed:"Жазба өзгертілді: ",at:", ",
 mineH:"Менің жазбаларым",mineNote:"Жазбаны өзгертуге немесе болдырмауға оның мерзімі аяқталғанға дейін болады. Мерзімнен кейін тізім дайын болады — ұйымдастырушыға хабарласыңыз.",
-edit:"Өзгерту",cancel:"Жазбаны болдырмау",sure:"Шынымен болдырмау керек пе?",poaIs:"сенімхат: ",locked:"🔒 Өзгертуге жабық (мерзімі ",title:"Burabay IT BIL — оқушыларды тасымалдау"}
+edit:"Өзгерту",cancel:"Жазбаны болдырмау",sure:"Шынымен болдырмау керек пе?",locked:"🔒 Өзгертуге жабық (мерзімі ",title:"Burabay IT BIL — оқушыларды тасымалдау"}
 };
 let lang="ru";try{lang=localStorage.getItem("lang")||"ru"}catch(e){}
 if(!L[lang])lang="ru";
 const t=k=>L[lang][k];
 const $=id=>document.getElementById(id);
-const st={dir:"fri",tr:"car",poa:""};
+const st={dir:"fri",tr:"car"};
 const ptName=a=>{const i=POINTS.indexOf(a);return i>=0?PTL[lang][i]:a};
 const trL=k=>t(k);
 const dirLbl={fri:"Щучинск → Астана",sun:"Астана → Щучинск"};
@@ -166,7 +179,7 @@ function applyLang(){
   POINTS.forEach((p,i)=>$("pt").add(new Option(t("ptPre")+PTL[lang][i],p)));$("pt").add(new Option(t("own"),"own"));
   if(cur)$("pt").value=cur;
   $("formTitle").textContent=t(EDIT?"editRec":"newRec");$("send").textContent=t(EDIT?"saveEdit":"save");
-  price();fillTimes();renderMine();
+  locationPicker.language();price();fillTimes();renderMine();
 }
 function open(dateStr,time){return Date.now()<deadline(dateStr,st.tr,st.dir,time).getTime()}
 function fillDates(){
@@ -184,14 +197,13 @@ function fillTimes(){
   const k=[...sel.options].find(o=>o.value===keep&&!o.disabled)||[...sel.options].find(o=>!o.disabled);if(k)sel.value=k.value;
 }
 function mark(){
-  document.querySelectorAll("#dir button,#tr button,#poa button").forEach(b=>{b.classList.toggle("on",st[b.parentNode.id]===b.dataset.v)});
-  $("carBox").hidden=st.tr!=="car";$("trainBox").hidden=st.tr!=="train";
+  document.querySelectorAll("#dir button").forEach(b=>{b.classList.toggle("on",st[b.parentNode.id]===b.dataset.v)});
 }
 function price(){
   const own=$("pt").value==="own";$("ownBox").hidden=!own;
   $("price").textContent=t("cost")+(own?PRICE.own:PRICE.point).toLocaleString("ru-RU")+t("tg");
 }
-["dir","tr","poa"].forEach(id=>{$(id).onclick=e=>{const b=e.target.closest("button");if(!b)return;st[id]=b.dataset.v;mark();if(id!=="poa")fillDates()}});
+["dir"].forEach(id=>{$(id).onclick=e=>{const b=e.target.closest("button");if(!b)return;st[id]=b.dataset.v;mark();fillDates()}});
 $("pt").onchange=price;$("date").onchange=fillTimes;
 //MASK-START
 function maskPhone(v){
@@ -217,7 +229,7 @@ async function rpc(fn,args){
   if(j&&j.error)throw new Error(j.error);
   return j;
 }
-const ERR={bad_pin:"ePin",pin_wrong:"ePinWrong",locked:"eLocked",closed:"eClosed",locked_rec:"eExp",addr:"eAddr",poa:"ePoa",bad_data:"eName",bad_phone:"ePhone",net:"eNet"};
+const ERR={bad_pin:"ePin",pin_wrong:"ePinWrong",locked:"eLocked",closed:"eClosed",locked_rec:"eExp",addr:"eAddr",car_only:"archive",bad_location:"eLocation",bad_data:"eName",bad_phone:"ePhone",net:"eNet"};
 const errText=e=>ERR[e.message]?t(ERR[e.message]):t("eSave")+e.message;
 const digits=v=>String(v).replace(/\D/g,"");
 const msg=(s,c)=>{$("msg").innerHTML="";const d=document.createElement("div");d.className=c;d.textContent=s;$("msg").append(d)};
@@ -228,16 +240,16 @@ $("send").onclick=async()=>{
   if(digits(phone).length!==10)return msg(t("ePhone"),"err");
   if(!/^\d{4}$/.test(pin))return msg(t("ePin"),"err");
   if(!date||!time||!open(date,time))return msg(t("eClosed"),"err");
-  let addr="",pr=0,poa="";
-  if(st.tr==="car"){
-    if($("pt").value==="own"){addr=$("addr").value.trim();if(addr.length<5)return msg(t("eAddr"),"err");pr=PRICE.own}
-    else{addr=$("pt").value;pr=PRICE.point}
-  }else{if(!st.poa)return msg(t("ePoa"),"err");poa=st.poa}
+  let addr="",pr=0,delivery_lat=null,delivery_lon=null,delivery_note="";
+  if($("pt").value==="own"){
+    const point=locationPicker.value();if(!point)return msg(t("eLocation"),"err");
+    delivery_lat=point.lat;delivery_lon=point.lon;delivery_note=$("delivery-note").value.trim();pr=PRICE.own;
+  }else{addr=$("pt").value;pr=PRICE.point}
   if(EDIT&&Date.now()>=deadline(EDIT.date,EDIT.tr,EDIT.dir,EDIT.time).getTime())return msg(t("eExp"),"err");
   const editing=!!EDIT;
   $("send").disabled=true;
   try{
-    await rpc("upsert_signup",{p_id:editing?EDIT.id:null,p_phone:digits(phone),p_pin:pin,p_data:{dir:st.dir,tr:st.tr,date,time,name,cls:$("num").value+$("let").value,addr,poa}});
+    await rpc("upsert_signup",{p_id:editing?EDIT.id:null,p_phone:digits(phone),p_pin:pin,p_data:{dir:st.dir,tr:st.tr,date,time,name,cls:$("num").value+$("let").value,addr,delivery_lat,delivery_lon,delivery_note}});
     msg(t(editing?"changed":"done")+name+", "+fmt(date)+t("at")+time+", "+trL(st.tr)+(pr?", "+pr+t("tg"):""),"ok");
     if(editing)exitEdit();
     $("name").value="";$("mPhone").value=maskPhone(phone);$("mPin").value=pin;loadMine();
@@ -251,12 +263,12 @@ async function loadMine(){
   catch(e){MINE=[];AUTH=null;renderMine();$("mineMsg").textContent=errText(e)}
 }
 $("find").onclick=loadMine;
-function exitEdit(){EDIT=null;$("formTitle").textContent=t("newRec");$("send").textContent=t("save");$("cancelEdit").hidden=true;$("name").value=""}
+function exitEdit(){EDIT=null;$("formTitle").textContent=t("newRec");$("send").textContent=t("save");$("cancelEdit").hidden=true;$("name").value="";locationPicker.set(null);$("delivery-note").value=""}
 $("cancelEdit").onclick=()=>{exitEdit();msg("","")};
 function startEdit(r){
-  EDIT=r;st.dir=r.dir;st.tr=r.tr;st.poa=r.poa||"";mark();fillDates();
+  EDIT=r;st.dir=r.dir;st.tr="car";mark();fillDates();
   $("date").value=r.date;fillTimes();$("time").value=r.time;
-  if(r.tr==="car"){const own=!POINTS.includes(r.addr);$("pt").value=own?"own":r.addr;$("addr").value=own?r.addr:"";price()}
+  const own=!POINTS.includes(r.addr);$("pt").value=own?"own":r.addr;locationPicker.set(own?{lat:r.delivery_lat,lon:r.delivery_lon}:null);$("delivery-note").value=r.delivery_note||"";price();
   $("name").value=r.name;$("num").value=r.cls.slice(0,-1);$("let").value=r.cls.slice(-1);
   $("phone").value=maskPhone(AUTH.phone);$("pin").value=AUTH.pin;
   $("formTitle").textContent=t("editRec");$("send").textContent=t("saveEdit");$("cancelEdit").hidden=false;msg("","");
@@ -265,11 +277,11 @@ function startEdit(r){
 function renderMine(){
   const box=$("mineList");box.innerHTML="";
   MINE.slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).forEach(r=>{
-    const can=Date.now()<deadline(r.date,r.tr,r.dir,r.time).getTime();
+    const can=r.tr==="car"&&Date.now()<deadline(r.date,r.tr,r.dir,r.time).getTime();
     const d=document.createElement("div");d.style.cssText="border-top:1px solid var(--b);padding:10px 0";
     const h=document.createElement("b");h.textContent=r.name+" ("+r.cls+")";
     const s=document.createElement("div");s.className="m";
-    s.textContent=trL(r.tr)+" · "+dirLbl[r.dir]+" · "+fmt(r.date)+" "+r.time+(r.tr==="car"?" · "+ptName(r.addr)+" · "+r.price+t("tg"):" · "+t("poaIs")+(r.poa==="Да"?t("yes"):t("no")));
+    s.textContent=(r.tr==="car"?trL("car"):t("archive"))+" · "+dirLbl[r.dir]+" · "+fmt(r.date)+" "+r.time+(r.tr==="car"?" · "+ptName(r.addr)+" · "+r.price+t("tg"):"");
     d.append(h,s);
     if(can){
       const e=document.createElement("button");e.className="sm";e.textContent=t("edit");e.onclick=()=>startEdit(r);
@@ -281,9 +293,10 @@ function renderMine(){
         loadMine();
       };
       d.append(e,x);
-    }else{const l=document.createElement("div");l.className="m";l.textContent=t("locked")+dateTime(deadline(r.date,r.tr,r.dir,r.time))+")";d.append(l)}
+    }else{const l=document.createElement("div");l.className="m";l.textContent=r.tr==="car"?t("locked")+dateTime(deadline(r.date,r.tr,r.dir,r.time))+")":t("archive");d.append(l)}
     box.append(d);
   });
 }
+const locationPicker=RazvozkaLocation.mount(document,()=>lang,CFG);
 mark();applyLang();fillDates();
 </script></body></html>

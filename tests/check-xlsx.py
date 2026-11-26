@@ -19,7 +19,7 @@ with zipfile.ZipFile(sys.argv[1]) as book:
     assert text("B3") == "=1+1" and cells["B3"].attrib["t"] == "inlineStr"
     assert not sheet.findall(".//s:f", ns), "Formula injection"
     assert text("I3") == 'Сынақ & «мекенжай»; <үй>\nЕкінші жол'
-    assert cells["L2"].find("s:v", ns).text == "5500"
-    assert sheet.find("s:autoFilter", ns).attrib["ref"] == "A1:L4"
+    assert cells["K2"].find("s:v", ns).text == "5500"
+    assert sheet.find("s:autoFilter", ns).attrib["ref"] == "A1:K4"
     assert sheet.find("s:sheetViews/s:sheetView/s:pane", ns).attrib["state"] == "frozen"
 print("XLSX verified: CRC, XML, rows, headers, text phones, statuses, Unicode, line breaks, no formulas or secrets.")

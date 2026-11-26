@@ -58,10 +58,10 @@ test('export allowlists columns and preserves text telephone, price and statuses
   const store = organizer.createStore(storage(), 'test', assert.fail);
   store.set(row(), 'missing');
   const table = organizer.exportRows([row({ pin: 'SECRET_PIN', pin_hash: 'SECRET_HASH' })], store);
-  assert.equal(table[0].length, 12);
+  assert.equal(table[0].length, 11);
   assert.deepEqual(table[0].slice(8, 10), ['Адрес', 'Статус проверки адреса']);
   assert.equal(table[1][7], '0000000001'); assert.equal(table[1][9], 'Не найдено');
-  assert.equal(table[1][11], 5500);
+  assert.equal(table[1][10], 5500);
   assert.equal(JSON.stringify(table).includes('SECRET'), false);
   const zip = build(table); assert.equal(zip[0], 0x50); assert.equal(zip[1], 0x4b);
 });
@@ -91,6 +91,7 @@ function harness() {
     addEventListener() {},
     URL: { createObjectURL() { downloads++; return 'blob:test'; }, revokeObjectURL() {} },
     RazvozkaXlsx: { build },
+    RazvozkaLocation: require("../public/location-picker.js"),
     fetch: async (path, options) => { calls.push({ path, options }); const reply = responses.shift(); assert.ok(reply, 'unexpected network call'); return typeof reply === 'function' ? reply() : reply; }
   });
   vm.runInContext(fs.readFileSync(require.resolve('../public/organizer.js'), 'utf8'), context);
@@ -166,4 +167,10 @@ test('UI: session timeout clears list, expired login cannot export', async () =>
   const expire = Array.from(h.timers.values())[0]; expire();
   assert.equal(h.nodes.records.children.length, 0); assert.equal(h.nodes.workspace.hidden, true);
   await h.nodes.export.fire('click'); assert.equal(h.downloads(), 0);
+});
+test('organizer opens the exact parent-selected point, and coordinate changes reset fingerprint',async()=>{
+ const h=harness();const entry=row({delivery_lat:51.17,delivery_lon:71.43,delivery_note:'Учебный ориентир'});await h.login([entry]);
+ const link=h.nodes.records.children[0].children.find(c=>c.href);
+ assert.ok(link);const url=new URL(link.href);assert.equal(url.origin,'https://www.openstreetmap.org');assert.equal(url.searchParams.get('mlat'),'51.170000');assert.equal(url.searchParams.get('mlon'),'71.430000');
+ assert.notEqual(organizer.fingerprint(entry),organizer.fingerprint({...entry,delivery_lon:71.44}));
 });

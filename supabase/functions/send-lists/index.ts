@@ -4,22 +4,21 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 const TZ = 5;
 const DIRS: Record<string, string> = { fri: "Щучинск → Астана", sun: "Астана → Щучинск" };
-const TRN: Record<string, string> = { car: "🚗 Машина", train: "🚆 Электричка" };
+const TRN: Record<string, string> = { car: "🚗 Машина" };
 const fmt = (s: string) => s.split("-").reverse().join(".");
 const ph = (p: string) => `+7 (${p.slice(0, 3)}) ${p.slice(3, 6)} ${p.slice(6, 8)} ${p.slice(8)}`;
 function deadline(date: string, tr: string, dir: string, time: string): number {
   const [y, m, d] = date.split("-").map(Number), [h, mi] = time.split(":").map(Number);
-  return tr === "car" ? Date.UTC(y, m - 1, d, h - TZ, mi) - 864e5
-                      : Date.UTC(y, m - 1, d - (dir === "fri" ? 2 : 3), 18 - TZ, 0);
+  return Date.UTC(y, m - 1, d, h - TZ, mi) - 864e5;
 }
-// Машины: отдельный список на каждый рейс. Электричка: один список на дату и направление.
-const key = (r: any) => r.tr === "car" ? `${r.trip_date}_${r.dir}_car_${r.dep_time.replace(":", "")}` : `${r.trip_date}_${r.dir}_train`;
+// Только машины: отдельный список на каждый рейс.
+const key = (r: any) => `${r.trip_date}_${r.dir}_car_${r.dep_time.replace(":", "")}`;
 function text(rows: any[]): string {
   const f = rows[0];
   const list = [...rows].sort((a, b) => a.dep_time.localeCompare(b.dep_time) || a.cls.localeCompare(b.cls) || a.name.localeCompare(b.name));
-  const head = `${TRN[f.tr]} | ${DIRS[f.dir]} | ${fmt(f.trip_date)}${f.tr === "car" ? " " + f.dep_time : ""} | всего: ${list.length}`;
-  const cols = `ФИО | Класс | Время | Телефон | ${f.tr === "car" ? "Адрес" : "Доверенность"} | Направление`;
-  const lines = list.map((r, i) => `${i + 1}. ${[r.name, r.cls, r.dep_time, ph(r.phone), f.tr === "car" ? r.addr : r.poa, DIRS[r.dir]].join(" | ")}`);
+  const head = `${TRN[f.tr]} | ${DIRS[f.dir]} | ${fmt(f.trip_date)} ${f.dep_time} | всего: ${list.length}`;
+  const cols = `ФИО | Класс | Время | Телефон | Адрес | Направление`;
+  const lines = list.map((r, i) => `${i + 1}. ${[r.name, r.cls, r.dep_time, ph(r.phone), r.addr, DIRS[r.dir]].join(" | ")}`);
   return [head, cols, ...lines].join("\n");
 }
 async function sendWhatsApp(message: string): Promise<boolean> {
@@ -32,7 +31,7 @@ async function sendWhatsApp(message: string): Promise<boolean> {
 Deno.serve(async (req) => {
   if (req.headers.get("x-cron-secret") !== Deno.env.get("CRON_SECRET")) return new Response("forbidden", { status: 403 });
   const since = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10);
-  const { data: rows, error } = await sb.from("signups").select("*").gte("trip_date", since);
+  const { data: rows, error } = await sb.from("signups").select("*").eq("tr", "car").gte("trip_date", since);
   if (error) return new Response(error.message, { status: 500 });
   const { data: sent } = await sb.from("sent_lists").select("key");
   const done = new Set((sent ?? []).map((s: any) => s.key));

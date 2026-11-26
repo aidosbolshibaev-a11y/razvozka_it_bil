@@ -34,6 +34,7 @@ begin
       and (p_tr is null or s.tr = p_tr)
   ), '[]'::jsonb));
 end;
+$$;
 
 revoke all on function public.organizer_signups(date,text,text) from public, anon, authenticated;
 grant execute on function public.organizer_signups(date,text,text) to authenticated;
