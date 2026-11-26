@@ -7,13 +7,32 @@
   <link rel="stylesheet" href="organizer.css">
   <script src="config.js" defer></script>
   <script src="xlsx.js" defer></script>
+  <script src="map-support.js" defer></script>
   <script src="organizer.js" defer></script>
 </head>
 <body>
   <main>
     <a href="index.html">← Запись на развозку</a>
     <h1>Списки организатора</h1>
-    <p>Сверьте адреса в Астане самостоятельно и поставьте отметки. Сайт не проверяет адреса по картам.</p>
+    <p>Сверьте здания на карте Астаны и поставьте отметки в списке. Проверка адресов пока ручная.</p>
+    <section class="panel map-panel" aria-labelledby="map-title">
+      <h2 id="map-title">Карта Астаны</h2>
+      <p>Перемещайте карту и меняйте масштаб, чтобы найти нужное здание. Общая карта города доступна без входа; данные пассажиров на неё не передаются.</p>
+      <button type="button" id="map-load">Показать карту</button>
+      <div id="astana-map"><p>Нажмите «Показать карту», чтобы загрузить OpenStreetMap.</p></div>
+      <p id="map-status" role="status" aria-live="polite"></p>
+      <p><a href="https://www.openstreetmap.org/#map=12/51.16/71.43" target="_blank" rel="noopener">Открыть карту в отдельной вкладке</a></p>
+      <p class="map-credit">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a></p>
+      <form id="map-search-form">
+        <label for="map-address">Найти улицу и здание в Астане</label>
+        <input id="map-address" type="search" maxlength="160" autocomplete="off" placeholder="Улица и номер здания" required aria-describedby="map-search-note">
+        <p id="map-search-note">Укажите только адрес, без ФИО и телефона. Поиск выполняется на сайте OpenStreetMap после перехода по подготовленной ссылке.</p>
+        <button type="submit">Подготовить поиск адреса</button>
+        <p id="map-search-status" role="status" aria-live="polite"></p>
+        <a id="map-search-result" target="_blank" rel="noopener" hidden>Открыть результаты в OpenStreetMap ↗</a>
+      </form>
+      <noscript><p>Включите JavaScript для встроенной карты или откройте карту по ссылке выше.</p></noscript>
+    </section>
     <section class="panel" id="login-panel" aria-labelledby="login-title">
       <h2 id="login-title">Вход организатора</h2>
       <p>Вход по учётной записи Supabase, которой администратор выдал доступ организатора. Телефон и PIN родителя здесь не подходят.</p>
