@@ -32,9 +32,9 @@ body{min-height:100vh;background-image:linear-gradient(var(--scene-overlay),var(
 .top{padding:16px;background:var(--c);border:1px solid var(--b);border-radius:12px;margin-bottom:16px}
 main>p{padding:12px 16px;background:var(--c);border-radius:12px}
 main>p a{color:var(--a)}
-</style><link rel="stylesheet" href="location-picker.css"><link rel="stylesheet" href="parent-layout.css"><script src="parent-navigation.js" defer></script></head><body><div class="parent-shell">
+</style><link rel="stylesheet" href="location-picker.css"><link rel="stylesheet" href="parent-layout.css"><script src="parent-navigation.js" defer></script><script src="trip-catalog.js"></script></head><body><div class="parent-shell">
 <aside class="parent-sidebar" aria-label="Навигация родителя">
-  <div class="parent-brand"><span class="parent-brand-mark" aria-hidden="true">B</span><div><strong>BURABAY IT BIL</strong><small data-i="parentCabinet"></small></div></div>
+  <div class="parent-brand"><img class="parent-brand-mark" src="assets/bil.webp" alt="" width="60" height="44"><div><strong>BURABAY IT BIL</strong><small data-i="parentCabinet"></small></div></div>
   <nav class="parent-nav" aria-label="Разделы сайта">
     <a href="#info" data-parent-route="info" aria-controls="info"><span class="nav-number" aria-hidden="true">01</span><span data-i="navInfo"></span></a>
     <a href="#form" data-parent-route="form" aria-controls="form"><span class="nav-number" aria-hidden="true">02</span><span data-i="navNew"></span></a>
@@ -71,8 +71,11 @@ main>p a{color:var(--a)}
 <section class="card" id="form" data-parent-panel aria-labelledby="formTitle">
 <h2 id="formTitle" tabindex="-1"></h2>
 <p class="panel-description" data-i="formDescription"></p>
-<label data-i="lDir"></label>
-<div class="seg" id="dir"><button data-v="fri">Щучинск → Астана</button><button data-v="sun">Астана → Щучинск</button></div>
+<div class="row">
+<div><label for="from-city" data-i="lFromCity"></label><select id="from-city"><option value="shchuchinsk">Щучинск</option><option value="astana">Астана</option></select></div>
+<div><label for="to-city" data-i="lToCity"></label><select id="to-city"><option value="astana">Астана</option><option value="shchuchinsk">Щучинск</option></select></div>
+</div>
+<p id="catalog-status" class="m" role="status" aria-live="polite"></p><button type="button" id="catalog-refresh" class="sm" data-i="catalogRefresh"></button>
 <label for="date" data-i="lDate"></label><input id="date" type="date">
 <label for="time" data-i="lTime"></label><select id="time"></select>
 <p id="trip-deadline" class="parent-deadline" role="status" aria-live="polite"></p>
@@ -130,7 +133,7 @@ const TZ=5, WA_DEFAULT="";
 const PRICE={own:6500,point:5500};
 const POINTS=["Точка 1","Точка 2"];
 const PTL={ru:["Точка 1","Точка 2"],kz:["1-нүкте","2-нүкте"]};
-const SLOTS={fri:{car:["14:00","16:00"]},sun:{car:["14:00","16:00"]}};
+let SLOTS={fri:{car:["14:00","16:00"]},sun:{car:["14:00","16:00"]}};
 const DIRS={fri:"Щучинск → Астана",sun:"Астана → Щучинск"};
 const TRN={car:"🚗 Машина"};
 const pad=n=>String(n).padStart(2,"0");
@@ -154,7 +157,7 @@ function waText(rows){
 }
 //PURE-END
 const L={
-ru:{parentCabinet:"Кабинет родителя",navInfo:"Инфо",navNew:"Новая запись",navMine:"Мои записи",organizerCabinet:"Кабинет организатора ↗",infoKicker:"Спокойная поездка начинается здесь",infoTitle:"Всё о развозке",infoPurpose:"Запись детей на поездки между Щучинском и Астаной. Выберите рейс, укажите ребёнка и точку доставки — организатор получит вашу запись. Здесь же можно посмотреть, изменить или отменить её.",infoAddressTitle:"Как выбрать адрес",infoAddress:"Общую точку выберите из списка. Для своего адреса откройте карту, приблизьте нужное здание и подтвердите метку у входа. После перемещения карты подтвердите её снова. Метка показывает выбранное вами место; проверьте его внимательно. При необходимости добавьте подъезд или ориентир.",infoMineTitle:"Где посмотреть и изменить запись",infoMine:"Откройте «Мои записи», введите тот же телефон и PIN и нажмите «Найти мои записи». До дедлайна доступны «Изменить» и «Отменить запись». Изменение откроет заполненную форму; отмену нужно подтвердить повторным нажатием.",infoDeadlineTitle:"До какого времени записаться",infoDeadline:"Сейчас запись, изменение и отмена закрываются за 24 часа до выезда машины по времени Астаны. Точная дата и время закрытия показаны в «Новой записи» после выбора даты и времени рейса. После закрытия выберите следующий рейс или свяжитесь с организатором.",infoPinTitle:"Телефон и PIN",infoPin:"При первой записи придумайте PIN из четырёх цифр и запомните его. Для просмотра своих записей используйте тот же телефон и PIN. Не отправляйте PIN в сообщениях. После обновления страницы свои записи нужно найти заново.",infoContactTitle:"Связь с организатором",infoContact:"По вопросам поездки, адресу доставки или записи после дедлайна обратитесь к организатору. WhatsApp откроет чат; сообщение отправляете вы сами.",contactWhatsApp:"Написать в WhatsApp ↗",contactCall:"Позвонить",formDescription:"Выберите поездку, укажите точку доставки и данные ребёнка. Для просмотра и изменения записи понадобится указанный телефон и PIN.",mineDescription:"Найдите записи по телефону родителя и PIN, которые использовали при оформлении. Доступные изменения и отмена показаны рядом с каждой записью.",deadlineUntil:"Записаться, изменить или отменить до: ",deadlineZone:" (время Астаны)",deadlineSelect:"Выберите дату и время — здесь появится срок записи.",deadlineClosed:"Приём изменений закрыт. Дедлайн: ",locationHint:"Выберите здание на карте. Подтвердите метку у нужного входа; улицу вручную вводить не требуется.",locationLoad:"Открыть / обновить карту",locationIn:"Масштаб +",locationOut:"Масштаб −",locationWest:"Запад",locationEast:"Восток",locationNorth:"Север",locationSouth:"Юг",locationConfirm:"Подтвердить метку у здания",locationKeyboard:"Можно нажать на здание, перетащить карту или двигать её стрелками клавиатуры. + и − меняют масштаб. Красный крест — будущая точка доставки.",locationNote:"Подъезд или ориентир (необязательно)",eLocation:"Приблизьте здание на карте и подтвердите метку.",archive:"Архивная запись: изменения закрыты",lPin:"PIN-код (4 цифры)",pinHint:"Придумайте и запомните его: он нужен, чтобы изменить или отменить запись",find:"Найти мои записи",phPin:"••••",eAuth:"Введите телефон и PIN-код",ePin:"PIN-код должен состоять из 4 цифр",ePinWrong:"Неверный PIN-код",eLocked:"Слишком много неверных попыток. Повторите через 15 минут",none:"Записей не найдено",eNet:"Нет связи с сервером. Повторите позже",sub:"Запись ребёнка на машину",introH:"Как пользоваться сайтом",
+ru:{lFromCity:"Откуда",lToCity:"Куда",catalogRefresh:"Обновить точки и время",catalogLoading:"Загружаем точки и время…",catalogReady:"Варианты обновлены.",catalogError:"Не удалось загрузить варианты. Повторите обновление; если ошибка остаётся, сообщите организатору о миграции 0005.",eCities:"Выберите два разных города.",ownAstana:"Свой адрес по метке доступен только в Астане. Для Щучинска выберите общую точку.",parentCabinet:"Кабинет родителя",navInfo:"Инфо",navNew:"Новая запись",navMine:"Мои записи",organizerCabinet:"Кабинет организатора ↗",infoKicker:"Спокойная поездка начинается здесь",infoTitle:"Всё о развозке",infoPurpose:"Запись детей на поездки между Щучинском и Астаной. Выберите рейс, укажите ребёнка и точку доставки — организатор получит вашу запись. Здесь же можно посмотреть, изменить или отменить её.",infoAddressTitle:"Как выбрать адрес",infoAddress:"Общую точку выберите из списка. Для своего адреса откройте карту, приблизьте нужное здание и подтвердите метку у входа. После перемещения карты подтвердите её снова. Метка показывает выбранное вами место; проверьте его внимательно. При необходимости добавьте подъезд или ориентир.",infoMineTitle:"Где посмотреть и изменить запись",infoMine:"Откройте «Мои записи», введите тот же телефон и PIN и нажмите «Найти мои записи». До дедлайна доступны «Изменить» и «Отменить запись». Изменение откроет заполненную форму; отмену нужно подтвердить повторным нажатием.",infoDeadlineTitle:"До какого времени записаться",infoDeadline:"Сейчас запись, изменение и отмена закрываются за 24 часа до выезда машины по времени Астаны. Точная дата и время закрытия показаны в «Новой записи» после выбора даты и времени рейса. После закрытия выберите следующий рейс или свяжитесь с организатором.",infoPinTitle:"Телефон и PIN",infoPin:"При первой записи придумайте PIN из четырёх цифр и запомните его. Для просмотра своих записей используйте тот же телефон и PIN. Не отправляйте PIN в сообщениях. После обновления страницы свои записи нужно найти заново.",infoContactTitle:"Связь с организатором",infoContact:"По вопросам поездки, адресу доставки или записи после дедлайна обратитесь к организатору. WhatsApp откроет чат; сообщение отправляете вы сами.",contactWhatsApp:"Написать в WhatsApp ↗",contactCall:"Позвонить",formDescription:"Выберите поездку, укажите точку доставки и данные ребёнка. Для просмотра и изменения записи понадобится указанный телефон и PIN.",mineDescription:"Найдите записи по телефону родителя и PIN, которые использовали при оформлении. Доступные изменения и отмена показаны рядом с каждой записью.",deadlineUntil:"Записаться, изменить или отменить до: ",deadlineZone:" (время Астаны)",deadlineSelect:"Выберите дату и время — здесь появится срок записи.",deadlineClosed:"Приём изменений закрыт. Дедлайн: ",locationHint:"Выберите здание на карте. Подтвердите метку у нужного входа; улицу вручную вводить не требуется.",locationLoad:"Открыть / обновить карту",locationIn:"Масштаб +",locationOut:"Масштаб −",locationWest:"Запад",locationEast:"Восток",locationNorth:"Север",locationSouth:"Юг",locationConfirm:"Подтвердить метку у здания",locationKeyboard:"Можно нажать на здание, перетащить карту или двигать её стрелками клавиатуры. + и − меняют масштаб. Красный крест — будущая точка доставки.",locationNote:"Подъезд или ориентир (необязательно)",eLocation:"Приблизьте здание на карте и подтвердите метку.",archive:"Архивная запись: изменения закрыты",lPin:"PIN-код (4 цифры)",pinHint:"Придумайте и запомните его: он нужен, чтобы изменить или отменить запись",find:"Найти мои записи",phPin:"••••",eAuth:"Введите телефон и PIN-код",ePin:"PIN-код должен состоять из 4 цифр",ePinWrong:"Неверный PIN-код",eLocked:"Слишком много неверных попыток. Повторите через 15 минут",none:"Записей не найдено",eNet:"Нет связи с сервером. Повторите позже",sub:"Запись ребёнка на машину",introH:"Как пользоваться сайтом",
 i1:"Выберите направление, дату и время выезда машины.",
 i2:"Выберите общую точку ({p1} тг) или подтвердите свою точку доставки на карте ({p2} тг).",
 i3:"Впишите ФИО ребёнка, класс и контактный номер родителя, нажмите «Записать».",
@@ -171,7 +174,7 @@ eAddr:"Укажите адрес",eDb:"Сервис записи недосту�
 eExp:"Срок изменения этой записи истёк",eSave:"Не удалось сохранить: ",done:"Готово! ",changed:"Запись изменена: ",at:" в ",
 mineH:"Мои записи",mineNote:"Изменить или отменить запись можно до её дедлайна. После дедлайна список уже сформирован — обратитесь к организатору.",
 edit:"Изменить",cancel:"Отменить запись",sure:"Точно отменить?",locked:"🔒 Приём изменений закрыт (дедлайн ",title:"Развозка Burabay IT BIL"},
-kz:{parentCabinet:"Ата-ана кабинеті",navInfo:"Ақпарат",navNew:"Жаңа жазба",navMine:"Менің жазбаларым",organizerCabinet:"Ұйымдастырушы кабинеті ↗",infoKicker:"Жайлы сапар осы жерден басталады",infoTitle:"Тасымалдау туралы",infoPurpose:"Балаларды Щучинск пен Астана арасындағы сапарларға жазу. Рейсті таңдап, баланың деректерін және жеткізу нүктесін көрсетіңіз — ұйымдастырушы жазбаны алады. Жазбаны осы жерден көруге, өзгертуге немесе болдырмауға болады.",infoAddressTitle:"Мекенжайды қалай таңдау керек",infoAddress:"Ортақ нүктені тізімнен таңдаңыз. Өз мекенжайыңыз үшін картаны ашып, ғимаратты жақындатыңыз және кіреберістегі белгіні растаңыз. Картаны жылжытқаннан кейін белгіні қайта растаңыз. Белгі сіз таңдаған орынды көрсетеді; мұқият тексеріңіз. Қажет болса, кіреберіс не бағдар қосыңыз.",infoMineTitle:"Жазбаны көру және өзгерту",infoMine:"«Менің жазбаларым» бөлімінде бұрынғы телефон мен PIN-ді енгізіп, «Жазбаларымды табу» түймесін басыңыз. Мерзімге дейін өзгерту және болдырмау қолжетімді. Өзгерту толтырылған нысанды ашады; болдырмау үшін түймені қайта басып растау қажет.",infoDeadlineTitle:"Қай уақытқа дейін жазылуға болады",infoDeadline:"Қазір жазылу, өзгерту және болдырмау көліктің жүруіне 24 сағат қалғанда Астана уақытымен жабылады. Нақты мерзім «Жаңа жазба» бөлімінде рейстің күні мен уақытын таңдағаннан кейін көрсетіледі. Мерзім өткен соң келесі рейсті таңдаңыз немесе ұйымдастырушыға хабарласыңыз.",infoPinTitle:"Телефон және PIN",infoPin:"Алғашқы жазбада төрт саннан тұратын PIN ойлап тауып, есте сақтаңыз. Жазбаларды көру үшін сол телефон мен PIN-ді қолданыңыз. PIN-ді хабарламада жібермеңіз. Бет жаңарған соң жазбаларды қайта табу қажет.",infoContactTitle:"Ұйымдастырушымен байланыс",infoContact:"Сапар, жеткізу орны немесе мерзімнен кейінгі жазылу туралы ұйымдастырушыға хабарласыңыз. WhatsApp чатты ашады; хабарламаны өзіңіз жібересіз.",contactWhatsApp:"WhatsApp арқылы жазу ↗",contactCall:"Қоңырау шалу",formDescription:"Рейсті, жеткізу нүктесін және баланың деректерін көрсетіңіз. Жазбаны көру және өзгерту үшін осы телефон мен PIN қажет.",mineDescription:"Тіркеу кезінде қолданған ата-ананың телефоны мен PIN арқылы жазбаларды табыңыз. Әр жазбада қолжетімді өзгерістер мен болдырмау әрекеті көрсетіледі.",deadlineUntil:"Жазылу, өзгерту немесе болдырмау мерзімі: ",deadlineZone:" (Астана уақыты)",deadlineSelect:"Күн мен уақытты таңдаңыз — жазылу мерзімі осында көрсетіледі.",deadlineClosed:"Өзгерту мерзімі аяқталды. Мерзімі: ",locationHint:"Картадан ғимаратты таңдаңыз. Керекті кіреберістегі белгіні растаңыз; көшені қолмен жазу қажет емес.",locationLoad:"Картаны ашу / жаңарту",locationIn:"Масштаб +",locationOut:"Масштаб −",locationWest:"Батыс",locationEast:"Шығыс",locationNorth:"Солтүстік",locationSouth:"Оңтүстік",locationConfirm:"Ғимарат жанындағы белгіні растау",locationKeyboard:"Ғимаратты басыңыз, картаны жылжытыңыз немесе пернетақта бағыттауыштарын қолданыңыз. + және − масштабты өзгертеді. Қызыл белгі — жеткізу нүктесі.",locationNote:"Кіреберіс не бағдар (міндетті емес)",eLocation:"Картадағы ғимаратты жақындатып, белгіні растаңыз.",archive:"Мұрағаттағы жазба: өзгерту жабық",lPin:"PIN-код (4 сан)",pinHint:"Ойлап тауып, есте сақтаңыз: жазбаны өзгерту немесе болдырмау үшін қажет",find:"Жазбаларымды табу",phPin:"••••",eAuth:"Телефон мен PIN-кодты енгізіңіз",ePin:"PIN-код 4 саннан тұруы керек",ePinWrong:"PIN-код қате",eLocked:"Қате әрекет тым көп. 15 минуттан кейін қайталаңыз",none:"Жазбалар табылмады",eNet:"Серверге қосылу мүмкін болмады. Кейінірек қайталаңыз",sub:"Баланы көлікке жазу",introH:"Сайтты қалай пайдалану керек",
+kz:{lFromCity:"Қайдан",lToCity:"Қайда",catalogRefresh:"Нүктелер мен уақытты жаңарту",catalogLoading:"Нүктелер мен уақыт жүктелуде…",catalogReady:"Нұсқалар жаңартылды.",catalogError:"Нұсқалар жүктелмеді. Қайта жаңартыңыз; қате қайталанса, ұйымдастырушыға 0005 миграциясы туралы хабарлаңыз.",eCities:"Екі түрлі қаланы таңдаңыз.",ownAstana:"Картадағы өз мекенжайы тек Астанада қолжетімді. Щучинск үшін ортақ нүктені таңдаңыз.",parentCabinet:"Ата-ана кабинеті",navInfo:"Ақпарат",navNew:"Жаңа жазба",navMine:"Менің жазбаларым",organizerCabinet:"Ұйымдастырушы кабинеті ↗",infoKicker:"Жайлы сапар осы жерден басталады",infoTitle:"Тасымалдау туралы",infoPurpose:"Балаларды Щучинск пен Астана арасындағы сапарларға жазу. Рейсті таңдап, баланың деректерін және жеткізу нүктесін көрсетіңіз — ұйымдастырушы жазбаны алады. Жазбаны осы жерден көруге, өзгертуге немесе болдырмауға болады.",infoAddressTitle:"Мекенжайды қалай таңдау керек",infoAddress:"Ортақ нүктені тізімнен таңдаңыз. Өз мекенжайыңыз үшін картаны ашып, ғимаратты жақындатыңыз және кіреберістегі белгіні растаңыз. Картаны жылжытқаннан кейін белгіні қайта растаңыз. Белгі сіз таңдаған орынды көрсетеді; мұқият тексеріңіз. Қажет болса, кіреберіс не бағдар қосыңыз.",infoMineTitle:"Жазбаны көру және өзгерту",infoMine:"«Менің жазбаларым» бөлімінде бұрынғы телефон мен PIN-ді енгізіп, «Жазбаларымды табу» түймесін басыңыз. Мерзімге дейін өзгерту және болдырмау қолжетімді. Өзгерту толтырылған нысанды ашады; болдырмау үшін түймені қайта басып растау қажет.",infoDeadlineTitle:"Қай уақытқа дейін жазылуға болады",infoDeadline:"Қазір жазылу, өзгерту және болдырмау көліктің жүруіне 24 сағат қалғанда Астана уақытымен жабылады. Нақты мерзім «Жаңа жазба» бөлімінде рейстің күні мен уақытын таңдағаннан кейін көрсетіледі. Мерзім өткен соң келесі рейсті таңдаңыз немесе ұйымдастырушыға хабарласыңыз.",infoPinTitle:"Телефон және PIN",infoPin:"Алғашқы жазбада төрт саннан тұратын PIN ойлап тауып, есте сақтаңыз. Жазбаларды көру үшін сол телефон мен PIN-ді қолданыңыз. PIN-ді хабарламада жібермеңіз. Бет жаңарған соң жазбаларды қайта табу қажет.",infoContactTitle:"Ұйымдастырушымен байланыс",infoContact:"Сапар, жеткізу орны немесе мерзімнен кейінгі жазылу туралы ұйымдастырушыға хабарласыңыз. WhatsApp чатты ашады; хабарламаны өзіңіз жібересіз.",contactWhatsApp:"WhatsApp арқылы жазу ↗",contactCall:"Қоңырау шалу",formDescription:"Рейсті, жеткізу нүктесін және баланың деректерін көрсетіңіз. Жазбаны көру және өзгерту үшін осы телефон мен PIN қажет.",mineDescription:"Тіркеу кезінде қолданған ата-ананың телефоны мен PIN арқылы жазбаларды табыңыз. Әр жазбада қолжетімді өзгерістер мен болдырмау әрекеті көрсетіледі.",deadlineUntil:"Жазылу, өзгерту немесе болдырмау мерзімі: ",deadlineZone:" (Астана уақыты)",deadlineSelect:"Күн мен уақытты таңдаңыз — жазылу мерзімі осында көрсетіледі.",deadlineClosed:"Өзгерту мерзімі аяқталды. Мерзімі: ",locationHint:"Картадан ғимаратты таңдаңыз. Керекті кіреберістегі белгіні растаңыз; көшені қолмен жазу қажет емес.",locationLoad:"Картаны ашу / жаңарту",locationIn:"Масштаб +",locationOut:"Масштаб −",locationWest:"Батыс",locationEast:"Шығыс",locationNorth:"Солтүстік",locationSouth:"Оңтүстік",locationConfirm:"Ғимарат жанындағы белгіні растау",locationKeyboard:"Ғимаратты басыңыз, картаны жылжытыңыз немесе пернетақта бағыттауыштарын қолданыңыз. + және − масштабты өзгертеді. Қызыл белгі — жеткізу нүктесі.",locationNote:"Кіреберіс не бағдар (міндетті емес)",eLocation:"Картадағы ғимаратты жақындатып, белгіні растаңыз.",archive:"Мұрағаттағы жазба: өзгерту жабық",lPin:"PIN-код (4 сан)",pinHint:"Ойлап тауып, есте сақтаңыз: жазбаны өзгерту немесе болдырмау үшін қажет",find:"Жазбаларымды табу",phPin:"••••",eAuth:"Телефон мен PIN-кодты енгізіңіз",ePin:"PIN-код 4 саннан тұруы керек",ePinWrong:"PIN-код қате",eLocked:"Қате әрекет тым көп. 15 минуттан кейін қайталаңыз",none:"Жазбалар табылмады",eNet:"Серверге қосылу мүмкін болмады. Кейінірек қайталаңыз",sub:"Баланы көлікке жазу",introH:"Сайтты қалай пайдалану керек",
 i1:"Бағытты, күнді және көліктің жүру уақытын таңдаңыз.",
 i2:"Ортақ нүктені ({p1} тг) немесе картада жеткізу орнын ({p2} тг) таңдаңыз.",
 i3:"Баланың аты-жөнін, сыныбын және ата-ананың байланыс нөмірін жазып, «Жазылу» түймесін басыңыз.",
@@ -194,6 +197,22 @@ if(!L[lang])lang="ru";
 const t=k=>L[lang][k];
 const $=id=>document.getElementById(id);
 const st={dir:"fri",tr:"car"};
+let CATALOG_POINTS=[],catalogLoaded=false,catalogBusy=false,saving=false;
+const toCity=()=>st.dir==="fri"?"astana":"shchuchinsk";
+function fillPoints(){
+ const sel=$("pt"),cur=sel.value;sel.innerHTML="";
+ CATALOG_POINTS.filter(p=>p.city===toCity()).forEach(p=>sel.add(new Option(p.address,p.id)));
+ if(catalogLoaded&&toCity()==="astana")sel.add(new Option(t("own"),"own"));
+ if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+ price();
+}
+async function loadCatalog(){
+ if(catalogBusy||saving)return;catalogBusy=true;catalogLoaded=false;$("send").disabled=true;$("catalog-refresh").disabled=true;$("catalog-status").textContent=t("catalogLoading");
+ try{const data=RazvozkaTripCatalog.parse(await rpc("trip_catalog",{}));CATALOG_POINTS=data.points;SLOTS=data.slots;catalogLoaded=true;fillPoints();fillDates();$("catalog-status").textContent=t("catalogReady");}
+ catch(e){$("catalog-status").textContent=t("catalogError");}
+ finally{catalogBusy=false;$("send").disabled=!catalogLoaded;$("catalog-refresh").disabled=false;}
+}
+
 const ptName=a=>{const i=POINTS.indexOf(a);return i>=0?PTL[lang][i]:a};
 const trL=k=>t(k);
 const dirLbl={fri:"Щучинск → Астана",sun:"Астана → Щучинск"};
@@ -205,9 +224,8 @@ function applyLang(){
     s=s.replace("{p1}",PRICE.point.toLocaleString("ru-RU")).replace("{p2}",PRICE.own.toLocaleString("ru-RU"));e.textContent=s});
   document.querySelectorAll("[data-ph]").forEach(e=>e.placeholder=t(e.dataset.ph));
   document.querySelectorAll("#lang button").forEach(b=>b.classList.toggle("on",b.dataset.v===lang));
-  const cur=$("pt").value;$("pt").innerHTML="";
-  POINTS.forEach((p,i)=>$("pt").add(new Option(t("ptPre")+PTL[lang][i],p)));$("pt").add(new Option(t("own"),"own"));
-  if(cur)$("pt").value=cur;
+  fillPoints();
+  $("catalog-status").textContent=t(catalogBusy?"catalogLoading":catalogLoaded?"catalogReady":"catalogError");
   $("formTitle").textContent=t(EDIT?"editRec":"newRec");$("send").textContent=t(EDIT?"saveEdit":"save");
   locationPicker.language();price();fillTimes();renderMine();
 }
@@ -237,13 +255,20 @@ function renderSelectedDeadline(){
 }
 function showParentPage(id){if(window.RazvozkaParentNavigation)window.RazvozkaParentNavigation.show(id)}
 function mark(){
-  document.querySelectorAll("#dir button").forEach(b=>{b.classList.toggle("on",st[b.parentNode.id]===b.dataset.v)});
+ $("from-city").value=st.dir==="fri"?"shchuchinsk":"astana";$("to-city").value=toCity();
+ for(const o of $("to-city").options)o.disabled=o.value===$("from-city").value;
 }
 function price(){
   const own=$("pt").value==="own";$("ownBox").hidden=!own;
   $("price").textContent=t("cost")+(own?PRICE.own:PRICE.point).toLocaleString("ru-RU")+t("tg");
 }
-["dir"].forEach(id=>{$(id).onclick=e=>{const b=e.target.closest("button");if(!b)return;st[id]=b.dataset.v;mark();fillDates()}});
+$("from-city").onchange=()=>{
+ if($("from-city").value===$("to-city").value)$("to-city").value=$("from-city").value==="astana"?"shchuchinsk":"astana";
+ changeCities();
+};
+$("to-city").onchange=changeCities;
+function changeCities(){try{st.dir=RazvozkaTripCatalog.direction($("from-city").value,$("to-city").value);mark();fillPoints();fillDates();}catch(e){msg(t("eCities"),"err");}}
+$("catalog-refresh").onclick=loadCatalog;
 $("pt").onchange=price;$("date").onchange=fillTimes;$("time").onchange=renderSelectedDeadline;
 //MASK-START
 function maskPhone(v){
@@ -269,32 +294,36 @@ async function rpc(fn,args){
   if(j&&j.error)throw new Error(j.error);
   return j;
 }
-const ERR={bad_pin:"ePin",pin_wrong:"ePinWrong",locked:"eLocked",closed:"eClosed",locked_rec:"eExp",addr:"eAddr",car_only:"archive",bad_location:"eLocation",bad_data:"eName",bad_phone:"ePhone",net:"eNet"};
+const ERR={bad_cities:"eCities",bad_pin:"ePin",pin_wrong:"ePinWrong",locked:"eLocked",closed:"eClosed",locked_rec:"eExp",addr:"eAddr",car_only:"archive",bad_location:"eLocation",bad_data:"eName",bad_phone:"ePhone",net:"eNet"};
 const errText=e=>ERR[e.message]?t(ERR[e.message]):t("eSave")+e.message;
 const digits=v=>String(v).replace(/\D/g,"");
 const msg=(s,c)=>{$("msg").innerHTML="";const d=document.createElement("div");d.className=c;d.textContent=s;$("msg").append(d);$("parent-feedback").hidden=c!=="ok"||!s;$("parent-feedback").textContent=c==="ok"?s:""};
 $("mPhone").oninput=e=>{e.target.value=maskPhone(e.target.value)};
 $("send").onclick=async()=>{
+ if(saving||catalogBusy)return;
+ if(!catalogLoaded)return msg(t("catalogError"),"err");
+ try{st.dir=RazvozkaTripCatalog.direction($("from-city").value,$("to-city").value);}catch(e){return msg(t("eCities"),"err");}
   const name=$("name").value.trim().replace(/\s+/g," "),phone=$("phone").value.trim(),pin=$("pin").value,date=$("date").value,time=$("time").value;
   if(name.split(" ").length<2)return msg(t("eName"),"err");
   if(digits(phone).length!==10)return msg(t("ePhone"),"err");
   if(!/^\d{4}$/.test(pin))return msg(t("ePin"),"err");
   if(!date||!time||!open(date,time))return msg(t("eClosed"),"err");
-  let addr="",pr=0,delivery_lat=null,delivery_lon=null,delivery_note="";
+  let point_id=null,addr="",pr=0,delivery_lat=null,delivery_lon=null,delivery_note="";
   if($("pt").value==="own"){
+    if(toCity()!=="astana")return msg(t("ownAstana"),"err");
     const point=locationPicker.value();if(!point)return msg(t("eLocation"),"err");
     delivery_lat=point.lat;delivery_lon=point.lon;delivery_note=$("delivery-note").value.trim();pr=PRICE.own;
-  }else{addr=$("pt").value;pr=PRICE.point}
+  }else{const point=CATALOG_POINTS.find(p=>p.id===$("pt").value&&p.city===toCity());if(!point)return msg(t("eAddr"),"err");point_id=point.id;addr=point.address;pr=PRICE.point}
   if(EDIT&&Date.now()>=deadline(EDIT.date,EDIT.tr,EDIT.dir,EDIT.time).getTime())return msg(t("eExp"),"err");
   const editing=!!EDIT;
-  $("send").disabled=true;
+  saving=true;$("send").disabled=true;
   try{
-    await rpc("upsert_signup",{p_id:editing?EDIT.id:null,p_phone:digits(phone),p_pin:pin,p_data:{dir:st.dir,tr:st.tr,date,time,name,cls:$("num").value+$("let").value,addr,delivery_lat,delivery_lon,delivery_note}});
+    await rpc("upsert_signup",{p_id:editing?EDIT.id:null,p_phone:digits(phone),p_pin:pin,p_data:{from_city:$("from-city").value,to_city:$("to-city").value,point_id,dir:st.dir,tr:st.tr,date,time,name,cls:$("num").value+$("let").value,addr,delivery_lat,delivery_lon,delivery_note}});
     msg(t(editing?"changed":"done")+name+", "+fmt(date)+t("at")+time+", "+trL(st.tr)+(pr?", "+pr+t("tg"):""),"ok");
     if(editing)exitEdit();
     $("name").value="";$("mPhone").value=maskPhone(phone);$("mPin").value=pin;await loadMine();showParentPage("mine");
   }catch(e){msg(errText(e),"err");showParentPage("form")}
-  $("send").disabled=false;
+  saving=false;$("send").disabled=!catalogLoaded;
 };
 async function loadMine(){
   const p=digits($("mPhone").value),pin=$("mPin").value;
@@ -306,10 +335,11 @@ $("find").onclick=loadMine;
 function exitEdit(){EDIT=null;$("formTitle").textContent=t("newRec");$("send").textContent=t("save");$("cancelEdit").hidden=true;$("name").value="";locationPicker.set(null);$("delivery-note").value=""}
 $("cancelEdit").onclick=()=>{exitEdit();msg("","")};
 function startEdit(r){
+  if(!catalogLoaded){showParentPage("form");msg(t("catalogError"),"err");return;}
   showParentPage("form");
   EDIT=r;st.dir=r.dir;st.tr="car";mark();fillDates();
   $("date").value=r.date;fillTimes();$("time").value=r.time;
-  const own=!POINTS.includes(r.addr);$("pt").value=own?"own":r.addr;locationPicker.set(own?{lat:r.delivery_lat,lon:r.delivery_lon}:null);$("delivery-note").value=r.delivery_note||"";price();
+  fillPoints();const point=CATALOG_POINTS.find(p=>p.city===toCity()&&(r.point_id?p.id===r.point_id:p.address===r.addr));const own=!point;$("pt").value=own?"own":point.id;locationPicker.set(own?{lat:r.delivery_lat,lon:r.delivery_lon}:null);$("delivery-note").value=r.delivery_note||"";price();
   $("name").value=r.name;$("num").value=r.cls.slice(0,-1);$("let").value=r.cls.slice(-1);
   $("phone").value=maskPhone(AUTH.phone);$("pin").value=AUTH.pin;
   $("formTitle").textContent=t("editRec");$("send").textContent=t("saveEdit");$("cancelEdit").hidden=false;msg("","");
@@ -340,4 +370,5 @@ function renderMine(){
 }
 const locationPicker=RazvozkaLocation.mount(document,()=>lang,CFG);
 mark();applyLang();fillDates();
+const catalogReady=loadCatalog();
 </script></body></html>

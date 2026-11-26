@@ -75,9 +75,10 @@ class Element {
   click() { this.clicked = true; }
   remove() {}
 }
-function harness() {
+function harness(withCatalog=false) {
   const ids = ['trip-date','message','storage-warning','login-form','login-panel','email','password','login-button','workspace','filters','direction','transport','load','logout','export','records','count'];
-  const nodes = Object.fromEntries(ids.map(id => [id, new Element()]));
+  const htmlIds=[...fs.readFileSync(require.resolve('../public/organizer.html'),'utf8').matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
+  const nodes = Object.fromEntries([...ids,...htmlIds].map(id => [id, new Element()]));
   nodes.workspace.hidden = true; nodes['storage-warning'].hidden = true;
   nodes.email.value = 'organizer@example.invalid'; nodes.password.value = 'fictional-password';
   const body = new Element(), calls = [], responses = [], timers = new Map();
@@ -92,8 +93,9 @@ function harness() {
     URL: { createObjectURL() { downloads++; return 'blob:test'; }, revokeObjectURL() {} },
     RazvozkaXlsx: { build },
     RazvozkaLocation: require("../public/location-picker.js"),
-    fetch: async (path, options) => { calls.push({ path, options }); const reply = responses.shift(); assert.ok(reply, 'unexpected network call'); return typeof reply === 'function' ? reply() : reply; }
+    fetch: async (path, options) => { calls.push({ path, options }); if(withCatalog&&path.endsWith('trip_catalog'))return {status:200,ok:true,json:async()=>({points:[],times:[{dir:'fri',time:'14:00'},{dir:'sun',time:'14:00'}]})}; const reply = responses.shift(); assert.ok(reply, 'unexpected network call'); return typeof reply === 'function' ? reply() : reply; }
   });
+  if(withCatalog){context.RazvozkaTripCatalog=require('../public/trip-catalog.js');vm.runInContext(fs.readFileSync(require.resolve('../public/catalog-admin.js'),'utf8'),context);}
   vm.runInContext(fs.readFileSync(require.resolve('../public/organizer.js'), 'utf8'), context);
   const response = (value, status = 200) => ({ status, ok: status >= 200 && status < 300, json: async () => value });
   const login = async (list = [row()]) => {
@@ -173,4 +175,12 @@ test('organizer opens the exact parent-selected point, and coordinate changes re
  const link=h.nodes.records.children[0].children.find(c=>c.href);
  assert.ok(link);const url=new URL(link.href);assert.equal(url.origin,'https://www.openstreetmap.org');assert.equal(url.searchParams.get('mlat'),'51.170000');assert.equal(url.searchParams.get('mlon'),'71.430000');
  assert.notEqual(organizer.fingerprint(entry),organizer.fingerprint({...entry,delivery_lon:71.44}));
+});
+
+test('organizer catalog uses authenticated session and clears workspace on revoked write access',async()=>{
+ const h=harness(true);await h.login();for(let i=0;i<8;i++)await Promise.resolve();
+ assert.equal(h.nodes['catalog-admin'].hidden,false);
+ const req=h.calls.find(x=>x.path.endsWith('trip_catalog'));assert.equal(req.options.headers.Authorization,'Bearer fictional-token');
+ h.nodes['point-city'].value='astana';h.nodes['point-address'].value='Учебная улица, дом А';h.responses.push(h.response({},403));
+ await h.nodes['point-form'].fire('submit');assert.equal(h.nodes.workspace.hidden,true);assert.equal(h.nodes['catalog-admin'].hidden,true);assert.equal(h.nodes['catalog-points'].children.length,0);
 });

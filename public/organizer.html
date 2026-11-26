@@ -8,6 +8,8 @@
   <script src="config.js" defer></script>
   <script src="xlsx.js" defer></script>
   <script src="location-picker.js" defer></script>
+  <script src="trip-catalog.js" defer></script>
+  <script src="catalog-admin.js" defer></script>
   <script src="organizer.js" defer></script>
 </head>
 <body>
@@ -32,6 +34,27 @@
         <h2 id="list-title">Готовый список</h2>
         <button type="button" id="logout">Выйти</button>
       </div>
+      <section id="catalog-admin" class="panel" aria-labelledby="catalog-title" hidden>
+        <h2 id="catalog-title">Общие точки и время выезда</h2>
+        <p>Новые варианты доступны всем родителям после обновления формы. Время добавляется для всех дат выбранного направления, по Астане. Дедлайн — за 24 часа до выезда.</p>
+        <form id="point-form">
+          <h3>Добавить общую точку</h3>
+          <label for="point-city">Город доставки</label><select id="point-city"><option value="astana">Астана</option><option value="shchuchinsk">Щучинск</option></select>
+          <label for="point-address">Адрес общей точки</label><input id="point-address" minlength="5" maxlength="200" required autocomplete="off">
+          <p>Укажите улицу, здание и при необходимости название места. Проверьте адрес перед добавлением. Цена общей точки — 5 500 ₸.</p>
+          <button id="point-add" type="submit">Добавить точку</button>
+        </form>
+        <ul id="catalog-points"></ul>
+        <form id="departure-form">
+          <h3>Добавить время выезда</h3>
+          <label for="departure-dir">Маршрут</label><select id="departure-dir"><option value="fri">Щучинск → Астана</option><option value="sun">Астана → Щучинск</option></select>
+          <label for="departure-time">Время по Астане</label><input id="departure-time" type="time" step="60" required>
+          <button id="departure-add" type="submit">Добавить время</button>
+        </form>
+        <ul id="catalog-times"></ul>
+        <button id="catalog-reload" type="button">Обновить варианты</button>
+        <p id="catalog-message" role="status" aria-live="polite"></p>
+      </section>
       <p>В списке все записи на выбранную дату, включая рейсы с открытой записью. Пока запись открыта, список может измениться.</p>
       <form id="filters">
         <label for="trip-date">Дата поездки</label>

@@ -79,6 +79,7 @@
       $("records").replaceChildren(); $("count").textContent = "";
     }
     function clearSession(text) {
+      if(catalogAdmin)catalogAdmin.clear();
       generation++; clearTimeout(timer); timer = null; session = null; store = null;
       clearList(); setBusy(false);
       $("workspace").hidden = true; $("login-panel").hidden = false;
@@ -107,11 +108,18 @@
       }
       if (response.status === 429) throw new Error("Слишком много попыток. Подождите и повторите вход позже.");
       if (path.startsWith("/rest/v1/rpc/") && response.status === 404) {
-        throw new Error("Доступ организатора ещё не настроен: администратору нужно применить миграцию 0003_organizer_lists.sql.");
+        throw new Error("Не настроена функция сервера: для списков нужна миграция 0003_organizer_lists.sql, для точек и времени — 0005_trip_catalog.sql.");
       }
       if (!response.ok) throw new Error("Не удалось выполнить запрос. Проверьте настройки и повторите позже.");
       return response.json();
     }
+    const catalogAdmin = root.RazvozkaCatalogAdmin?.mount(document,async(fn,args)=>{
+      if(!ensureSession())throw Error("Войдите заново.");
+      const auth=session;
+      try{const result=await request("/rest/v1/rpc/"+fn,args,auth.token);
+        if(session!==auth||!ensureSession())throw Error("Сеанс завершён.");return result;
+      }catch(e){if(e.denied&&session===auth)clearSession(e.message);throw e;}
+    });
     async function readList(auth, filters) {
       const result = await request("/rest/v1/rpc/organizer_signups", filters, auth.token);
       if (!result || !Array.isArray(result.rows)) throw new Error("Сервер вернул некорректный список.");
@@ -185,6 +193,7 @@
         $("workspace").hidden = false; $("login-panel").hidden = true;
         timer = setTimeout(() => clearSession("Войдите заново: сеанс завершён."), Math.min(auth.expires - Date.now(), 2147483647));
         render(); message("Вход выполнен. Отметки проверки — ручные.");
+        if(catalogAdmin)catalogAdmin.open();
       } catch (error) { if (operation === generation) clearSession(error.message); }
       finally { if (operation === generation) setBusy(false); }
     });
