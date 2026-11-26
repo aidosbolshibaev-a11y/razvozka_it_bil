@@ -27,7 +27,7 @@
   };
   function mount(document, getLanguage, config = {}) {
     const $ = id => document.getElementById(id), viewport = $("location-map"), tiles = $("location-tiles");
-    let center = { ...DEFAULT }, zoom = 13, selected = null, active = false, ready = false, generation = 0, pending = 0, failed = false, drag = null, timer;
+    let center = { ...DEFAULT }, zoom = 13, selected = null, active = false, ready = false, generation = 0, pending = 0, failed = false, drag = null, timer, layoutWidth = 0;
     const t = key => (WORDS[getLanguage()] || WORDS.ru)[key];
     function message(key) { $("location-status").textContent = t(key); }
     function show() {
@@ -44,6 +44,7 @@
       const operation = ++generation; root.clearTimeout(timer);
       tiles.replaceChildren(); ready = false; failed = false;
       const width = viewport.clientWidth || 320, height = viewport.clientHeight || 340, p = world(center, zoom);
+      layoutWidth = viewport.clientWidth;
       const x0 = Math.floor((p.x - width / 2) / 256), x1 = Math.floor((p.x + width / 2) / 256);
       const y0 = Math.floor((p.y - height / 2) / 256), y1 = Math.floor((p.y + height / 2) / 256);
       pending = (x1 - x0 + 1) * (y1 - y0 + 1);
@@ -104,6 +105,12 @@
       else move(coordinates({ x: previous.p.x - dx, y: previous.p.y - dy }, zoom));
     });
     viewport.addEventListener("pointercancel", () => { drag = null; tiles.style.transform = ""; render(); });
+    if (typeof root.ResizeObserver === "function") {
+      const observer = new root.ResizeObserver(() => {
+        if (active && viewport.clientWidth > 0 && viewport.clientWidth !== layoutWidth) render();
+      });
+      observer.observe(viewport);
+    }
     show(); message("idle");
     return {
       value: () => selected ? { ...selected } : null,

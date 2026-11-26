@@ -15,13 +15,14 @@ class Element {
  setPointerCapture(){}
  getBoundingClientRect(){return {left:0,top:0,width:320,height:340};}
 }
-function setup(protocol='https:'){
+function setup(protocol='https:',observe=false){
  const names=['location-map','location-tiles','location-confirm','location-status','location-value','location-load','location-map-panel','location-in','location-out','location-west','location-east','location-north','location-south'];
  const nodes=Object.fromEntries(names.map(n=>[n,new Element()]));let timer=0;
- const context=vm.createContext({URL,location:{protocol},setTimeout:()=>++timer,clearTimeout(){}});
+ let notify=()=>{};
+ const context=vm.createContext({URL,location:{protocol},setTimeout:()=>++timer,clearTimeout(){},...(observe?{ResizeObserver:class{constructor(callback){notify=callback;}observe(){}}}:{})});
  vm.runInContext(fs.readFileSync(require.resolve('../public/location-picker.js'),'utf8'),context);
  const picker=context.RazvozkaLocation.mount({getElementById:id=>nodes[id],createElement:()=>new Element()},()=> 'ru');
- return {nodes,picker,loaded(){nodes['location-tiles'].children.forEach(img=>img.fire('load'));}};
+ return {nodes,picker,resize(){notify();},loaded(){nodes['location-tiles'].children.forEach(img=>img.fire('load'));}};
 }
 test('default city center is not selected; confirm requires loaded tiles and building-level zoom',()=>{
  const h=setup();assert.equal(h.picker.value(),null);h.nodes['location-confirm'].fire('click');assert.equal(h.picker.value(),null);
@@ -44,4 +45,10 @@ test('pointer tap selects center only after explicit confirmation; cancelling ge
  h.nodes['location-map'].fire('pointerdown',{clientX:160,clientY:170,pointerId:1,button:0});
  h.nodes['location-map'].fire('pointerup',{clientX:190,clientY:175});assert.equal(h.picker.value(),null);h.loaded();
  h.nodes['location-confirm'].fire('click');assert.ok(h.picker.value());
+});
+test('resizing a visible map redraws tiles while preserving the saved point; hidden panels do not load tiles',()=>{
+ const h=setup('https:',true);h.picker.set({lat:51.17,lon:71.43});h.nodes['location-load'].fire('click');h.loaded();
+ const old=h.nodes['location-tiles'].children[0];h.nodes['location-map'].clientWidth=420;h.resize();
+ assert.notEqual(h.nodes['location-tiles'].children[0],old);assert.equal(h.picker.value().lat,51.17);
+ const current=h.nodes['location-tiles'].children[0];h.nodes['location-map'].clientWidth=0;h.resize();assert.equal(h.nodes['location-tiles'].children[0],current);
 });
