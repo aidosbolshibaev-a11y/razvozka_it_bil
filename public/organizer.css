@@ -40,3 +40,17 @@ button:disabled { opacity: .6; cursor: wait; }
 #storage-warning { color: #8a3800; }
 p, h1, h2, h3, a, li { overflow-wrap: anywhere; }
 [hidden] { display: none !important; }
+
+/* Decorative local asset, shared with the parent page. */
+body {
+  min-height: 100vh;
+  background-image: linear-gradient(rgb(238 242 246 / 42%), rgb(238 242 246 / 42%)), url("assets/burabay-road.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+main {
+  background: rgb(255 255 255 / 94%);
+  border-radius: 20px;
+}

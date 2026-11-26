@@ -2,8 +2,8 @@
 <html lang="ru"><head><meta charset="utf-8"><title>Развозка Burabay IT BIL</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f5f6f8;--c:#fff;--t:#1c1f26;--m:#6b7280;--a:#1f6feb;--b:#d9dce2;--e:#c62828;--ok:#1b7f3b;--w:#fff4d6}
-@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14161a;--c:#1e2127;--t:#eceef2;--m:#9aa1ad;--a:#5b9dff;--b:#343942;--e:#ff6b6b;--ok:#4cc27a;--w:#3a3115}}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f5f6f8;--c:#fff;--t:#1c1f26;--m:#6b7280;--a:#1f6feb;--b:#d9dce2;--e:#c62828;--ok:#1b7f3b;--w:#fff4d6;--scene-overlay:rgba(245,246,248,.48)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14161a;--c:#1e2127;--t:#eceef2;--m:#9aa1ad;--a:#5b9dff;--b:#343942;--e:#ff6b6b;--ok:#4cc27a;--w:#3a3115;--scene-overlay:rgba(20,22,26,.62)}}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--t);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
 main{max-width:640px;margin:0 auto;padding:16px}
@@ -27,6 +27,11 @@ select,input{width:100%;box-sizing:border-box;padding:11px;font-size:16px;border
 .sm{padding:8px 12px;font-size:14px;border:1px solid var(--b);background:var(--bg);color:var(--t);border-radius:8px;cursor:pointer;margin:8px 6px 0 0}
 .wrap{overflow-x:auto;margin-top:8px}table{border-collapse:collapse;font-size:13px;min-width:100%}
 th,td{border:1px solid var(--b);padding:5px 7px;text-align:left;white-space:nowrap}th{background:var(--bg)}
+/* Generated Burabay-inspired scenery is decorative; forms stay on opaque cards. */
+body{min-height:100vh;background-image:linear-gradient(var(--scene-overlay),var(--scene-overlay)),url("assets/burabay-road.png");background-position:center;background-size:cover;background-repeat:no-repeat;background-attachment:fixed}
+.top{padding:16px;background:var(--c);border:1px solid var(--b);border-radius:12px;margin-bottom:16px}
+main>p{padding:12px 16px;background:var(--c);border-radius:12px}
+main>p a{color:var(--a)}
 </style></head><body><main>
 <div class="top">
 <div><h1 id="h1">Развозка Burabay IT BIL</h1><div class="m" data-i="sub"></div></div>
