@@ -5,7 +5,8 @@
   const controls=['point-city','point-address','point-add','departure-dir','departure-time','departure-add','catalog-reload'];
   function lock(value){busy=value;for(const id of controls)$(id).disabled=value;}
   function render(data){
-   const c=root.RazvozkaTripCatalog.parse(data);$('catalog-points').replaceChildren();$('catalog-times').replaceChildren();
+   const c=root.RazvozkaTripCatalog.parse(data);
+   const edit=$('point-edit-id');if(edit){const keep=edit.value;edit.replaceChildren();for(const p of c.points){const o=document.createElement('option');o.value=p.id;o.textContent=(p.city==='astana'?'Астана':'Щучинск')+' · '+p.address;edit.append(o);}if(c.points.some(p=>p.id===keep))edit.value=keep;}$('catalog-points').replaceChildren();$('catalog-times').replaceChildren();
    for(const p of c.points){const li=document.createElement('li');li.textContent=(p.city==='astana'?'Астана':'Щучинск')+' · '+p.address;$('catalog-points').append(li);}
    for(const dir of ['fri','sun']){const li=document.createElement('li');li.textContent=(dir==='fri'?'Щучинск → Астана':'Астана → Щучинск')+' · '+c.slots[dir].car.join(', ');$('catalog-times').append(li);}
   }

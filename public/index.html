@@ -160,7 +160,9 @@ const pad=n=>String(n).padStart(2,"0");
 const parse=s=>{const[y,m,d]=s.split("-").map(Number);return{y,m:m-1,d}};
 const at=(y,m,d,h,mi)=>new Date(Date.UTC(y,m,d,h-TZ,mi));
 const fmt=s=>{const{y,m,d}=parse(s);return pad(d)+"."+pad(m+1)+"."+y};
+const DEADLINES={};
 function deadline(dateStr,tr,dir,time){
+  if(tr==="car"&&DEADLINES[dateStr+"_"+dir+"_"+time])return new Date(DEADLINES[dateStr+"_"+dir+"_"+time]);
   const{y,m,d}=parse(dateStr),[h,mi]=time.split(":").map(Number);
   return new Date(at(y,m,d,h,mi).getTime()-24*3600e3);
 }
@@ -177,7 +179,7 @@ function waText(rows){
 }
 //PURE-END
 const L={
-ru:{driverTitle:"Ваш водитель",driverPhone:"Телефон: ",driverKaspi:"Kaspi для оплаты развозки: ",driverPending:"Водитель появится здесь после публикации организатором.",guideExample:"Пример экрана",guideFictional:"Учебный пример, не форма для ввода. Данные вымышлены.",guideAddressStep:"Затем откройте карту",guideAddressConfirm:"После выбора здания нажмите «Подтвердить метку у здания» на карте.",guideMineStep:"После поиска рядом с записью:",guidePinMasked:"PIN скрыт",guideOpenForm:"Перейти в «Новую запись» →",guideOpenMine:"Перейти в «Мои записи» →",lFromCity:"Откуда",lToCity:"Куда",catalogRefresh:"Обновить точки и время",catalogLoading:"Загружаем точки и время…",catalogReady:"Варианты обновлены.",catalogError:"Не удалось загрузить варианты. Повторите обновление; если ошибка остаётся, сообщите организатору о миграции 0005.",eCities:"Выберите два разных города.",ownAstana:"Свой адрес по метке доступен только в Астане. Для Щучинска выберите общую точку.",parentCabinet:"Кабинет родителя",navInfo:"Инфо",navNew:"Новая запись",navMine:"Мои записи",organizerCabinet:"Кабинет организатора ↗",infoKicker:"Спокойная поездка начинается здесь",infoTitle:"Всё о развозке",infoPurpose:"Запись детей на поездки между Щучинском и Астаной. Выберите рейс, укажите ребёнка и точку доставки — организатор получит вашу запись. Здесь же можно посмотреть, изменить или отменить её.",infoAddressTitle:"Как выбрать адрес",infoAddress:"Общую точку выберите из списка. Для своего адреса откройте карту, приблизьте нужное здание и подтвердите метку у входа. После перемещения карты подтвердите её снова. Метка показывает выбранное вами место; проверьте его внимательно. При необходимости добавьте подъезд или ориентир.",infoMineTitle:"Где посмотреть и изменить запись",infoMine:"Откройте «Мои записи», введите тот же телефон и PIN и нажмите «Найти мои записи». До дедлайна доступны «Изменить» и «Отменить запись». Изменение откроет заполненную форму; отмену нужно подтвердить повторным нажатием.",infoDeadlineTitle:"До какого времени записаться",infoDeadline:"Сейчас запись, изменение и отмена закрываются за 24 часа до выезда машины по времени Астаны. Точная дата и время закрытия показаны в «Новой записи» после выбора даты и времени рейса. После закрытия выберите следующий рейс или свяжитесь с организатором.",infoPinTitle:"Телефон и PIN",infoPin:"При первой записи придумайте PIN из четырёх цифр и запомните его. Для просмотра своих записей используйте тот же телефон и PIN. Не отправляйте PIN в сообщениях. После обновления страницы свои записи нужно найти заново.",infoContactTitle:"Связь с организатором",infoContact:"По вопросам поездки, адресу доставки или записи после дедлайна обратитесь к организатору. WhatsApp откроет чат; сообщение отправляете вы сами.",contactWhatsApp:"Написать в WhatsApp ↗",contactCall:"Позвонить",formDescription:"Выберите поездку, укажите точку доставки и данные ребёнка. Для просмотра и изменения записи понадобится указанный телефон и PIN.",mineDescription:"Найдите записи по телефону родителя и PIN, которые использовали при оформлении. Доступные изменения и отмена показаны рядом с каждой записью.",deadlineUntil:"Записаться, изменить или отменить до: ",deadlineZone:" (время Астаны)",deadlineSelect:"Выберите дату и время — здесь появится срок записи.",deadlineClosed:"Приём изменений закрыт. Дедлайн: ",locationHint:"Выберите здание на карте. Подтвердите метку у нужного входа; улицу вручную вводить не требуется.",locationLoad:"Открыть / обновить карту",locationIn:"Масштаб +",locationOut:"Масштаб −",locationWest:"Запад",locationEast:"Восток",locationNorth:"Север",locationSouth:"Юг",locationConfirm:"Подтвердить метку у здания",locationKeyboard:"Можно нажать на здание, перетащить карту или двигать её стрелками клавиатуры. + и − меняют масштаб. Красный крест — будущая точка доставки.",locationNote:"Подъезд или ориентир (необязательно)",eLocation:"Приблизьте здание на карте и подтвердите метку.",archive:"Архивная запись: изменения закрыты",lPin:"PIN-код (4 цифры)",pinHint:"Придумайте и запомните его: он нужен, чтобы изменить или отменить запись",find:"Найти мои записи",phPin:"••••",eAuth:"Введите телефон и PIN-код",ePin:"PIN-код должен состоять из 4 цифр",ePinWrong:"Неверный PIN-код",eLocked:"Слишком много неверных попыток. Повторите через 15 минут",none:"Записей не найдено",eNet:"Нет связи с сервером. Повторите позже",sub:"Запись ребёнка на машину",introH:"Как пользоваться сайтом",
+ru:{driverTitle:"Ваш водитель",driverPhone:"Телефон: ",driverKaspi:"Kaspi для оплаты развозки: ",driverPending:"Водитель появится здесь после публикации организатором.",guideExample:"Пример экрана",guideFictional:"Учебный пример, не форма для ввода. Данные вымышлены.",guideAddressStep:"Затем откройте карту",guideAddressConfirm:"После выбора здания нажмите «Подтвердить метку у здания» на карте.",guideMineStep:"После поиска рядом с записью:",guidePinMasked:"PIN скрыт",guideOpenForm:"Перейти в «Новую запись» →",guideOpenMine:"Перейти в «Мои записи» →",lFromCity:"Откуда",lToCity:"Куда",catalogRefresh:"Обновить точки и время",catalogLoading:"Загружаем точки и время…",catalogReady:"Варианты обновлены.",catalogError:"Не удалось загрузить варианты. Повторите обновление; если ошибка остаётся, сообщите организатору о миграции 0005.",eCities:"Выберите два разных города.",ownAstana:"Свой адрес по метке доступен только в Астане. Для Щучинска выберите общую точку.",parentCabinet:"Кабинет родителя",navInfo:"Инфо",navNew:"Новая запись",navMine:"Мои записи",organizerCabinet:"Кабинет организатора ↗",infoKicker:"Спокойная поездка начинается здесь",infoTitle:"Всё о развозке",infoPurpose:"Запись детей на поездки между Щучинском и Астаной. Выберите рейс, укажите ребёнка и точку доставки — организатор получит вашу запись. Здесь же можно посмотреть, изменить или отменить её.",infoAddressTitle:"Как выбрать адрес",infoAddress:"Общую точку выберите из списка. Для своего адреса откройте карту, приблизьте нужное здание и подтвердите метку у входа. После перемещения карты подтвердите её снова. Метка показывает выбранное вами место; проверьте его внимательно. При необходимости добавьте подъезд или ориентир.",infoMineTitle:"Где посмотреть и изменить запись",infoMine:"Откройте «Мои записи», введите тот же телефон и PIN и нажмите «Найти мои записи». До дедлайна доступны «Изменить» и «Отменить запись». Изменение откроет заполненную форму; отмену нужно подтвердить повторным нажатием.",infoDeadlineTitle:"До какого времени записаться",infoDeadline:"По умолчанию запись, изменение и отмена закрываются за 24 часа до выезда машины по времени Астаны. Организатор может изменить дедлайн конкретного рейса. Точная дата и время закрытия показаны в «Новой записи» после выбора даты и времени рейса. После закрытия выберите следующий рейс или свяжитесь с организатором.",infoPinTitle:"Телефон и PIN",infoPin:"При первой записи придумайте PIN из четырёх цифр и запомните его. Для просмотра своих записей используйте тот же телефон и PIN. Не отправляйте PIN в сообщениях. После обновления страницы свои записи нужно найти заново.",infoContactTitle:"Связь с организатором",infoContact:"По вопросам поездки, адресу доставки или записи после дедлайна обратитесь к организатору. WhatsApp откроет чат; сообщение отправляете вы сами.",contactWhatsApp:"Написать в WhatsApp ↗",contactCall:"Позвонить",formDescription:"Выберите поездку, укажите точку доставки и данные ребёнка. Для просмотра и изменения записи понадобится указанный телефон и PIN.",mineDescription:"Найдите записи по телефону родителя и PIN, которые использовали при оформлении. Доступные изменения и отмена показаны рядом с каждой записью.",deadlineUntil:"Записаться, изменить или отменить до: ",deadlineZone:" (время Астаны)",deadlineSelect:"Выберите дату и время — здесь появится срок записи.",deadlineClosed:"Приём изменений закрыт. Дедлайн: ",locationHint:"Выберите здание на карте. Подтвердите метку у нужного входа; улицу вручную вводить не требуется.",locationLoad:"Открыть / обновить карту",locationIn:"Масштаб +",locationOut:"Масштаб −",locationWest:"Запад",locationEast:"Восток",locationNorth:"Север",locationSouth:"Юг",locationConfirm:"Подтвердить метку у здания",locationKeyboard:"Можно нажать на здание, перетащить карту или двигать её стрелками клавиатуры. + и − меняют масштаб. Красный крест — будущая точка доставки.",locationNote:"Подъезд или ориентир (необязательно)",eLocation:"Приблизьте здание на карте и подтвердите метку.",archive:"Архивная запись: изменения закрыты",lPin:"PIN-код (4 цифры)",pinHint:"Придумайте и запомните его: он нужен, чтобы изменить или отменить запись",find:"Найти мои записи",phPin:"••••",eAuth:"Введите телефон и PIN-код",ePin:"PIN-код должен состоять из 4 цифр",ePinWrong:"Неверный PIN-код",eLocked:"Слишком много неверных попыток. Повторите через 15 минут",none:"Записей не найдено",eNet:"Нет связи с сервером. Повторите позже",sub:"Запись ребёнка на машину",introH:"Как пользоваться сайтом",
 i1:"Выберите направление, дату и время выезда машины.",
 i2:"Выберите общую точку ({p1} тг) или подтвердите свою точку доставки на карте ({p2} тг).",
 i3:"Впишите ФИО ребёнка, класс и контактный номер родителя, нажмите «Записать».",
@@ -217,7 +219,7 @@ if(!L[lang])lang="ru";
 const t=k=>L[lang][k];
 const $=id=>document.getElementById(id);
 const st={dir:"fri",tr:"car"};
-let CATALOG_POINTS=[],catalogLoaded=false,catalogBusy=false,saving=false;
+let CATALOG_POINTS=[],catalogLoaded=false,catalogBusy=false,saving=false,checkingDeadline=false;
 const toCity=()=>st.dir==="fri"?"astana":"shchuchinsk";
 function fillPoints(){
  const sel=$("pt"),cur=sel.value;sel.innerHTML="";
@@ -226,9 +228,13 @@ function fillPoints(){
  if([...sel.options].some(o=>o.value===cur))sel.value=cur;
  price();
 }
+function readDeadlines(raw){
+ const next={};for(const d of raw.deadlines||[]){if(!/^\d{4}-\d{2}-\d{2}$/.test(d.date)||!['fri','sun'].includes(d.dir)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(d.time)||!Number.isFinite(Date.parse(d.deadline)))throw Error('catalog');next[d.date+'_'+d.dir+'_'+d.time]=d.deadline;}
+ for(const key of Object.keys(DEADLINES))delete DEADLINES[key];Object.assign(DEADLINES,next);
+}
 async function loadCatalog(){
  if(catalogBusy||saving)return;catalogBusy=true;catalogLoaded=false;$("send").disabled=true;$("catalog-refresh").disabled=true;$("catalog-status").textContent=t("catalogLoading");
- try{const data=RazvozkaTripCatalog.parse(await rpc("trip_catalog",{}));CATALOG_POINTS=data.points;SLOTS=data.slots;catalogLoaded=true;fillPoints();fillDates();$("catalog-status").textContent=t("catalogReady");}
+ try{const raw=await rpc("trip_catalog",{});readDeadlines(raw);const data=RazvozkaTripCatalog.parse(raw);CATALOG_POINTS=data.points;SLOTS=data.slots;catalogLoaded=true;fillPoints();fillDates();$("catalog-status").textContent=t("catalogReady");}
  catch(e){$("catalog-status").textContent=t("catalogError");}
  finally{catalogBusy=false;$("send").disabled=!catalogLoaded;$("catalog-refresh").disabled=false;}
 }
@@ -320,8 +326,9 @@ const digits=v=>String(v).replace(/\D/g,"");
 const msg=(s,c)=>{$("msg").innerHTML="";const d=document.createElement("div");d.className=c;d.textContent=s;$("msg").append(d);$("parent-feedback").hidden=c!=="ok"||!s;$("parent-feedback").textContent=c==="ok"?s:""};
 $("mPhone").oninput=e=>{e.target.value=maskPhone(e.target.value)};
 $("send").onclick=async()=>{
- if(saving||catalogBusy)return;
+ if(saving||catalogBusy||checkingDeadline)return;
  if(!catalogLoaded)return msg(t("catalogError"),"err");
+ checkingDeadline=true;try{readDeadlines(await rpc("trip_catalog",{}));renderSelectedDeadline();}catch(e){showParentPage("form");return msg(t("catalogError"),"err");}finally{checkingDeadline=false;}
  try{st.dir=RazvozkaTripCatalog.direction($("from-city").value,$("to-city").value);}catch(e){return msg(t("eCities"),"err");}
   const name=$("name").value.trim().replace(/\s+/g," "),phone=$("phone").value.trim(),pin=$("pin").value,date=$("date").value,time=$("time").value;
   if(name.split(" ").length<2)return msg(t("eName"),"err");
@@ -368,7 +375,7 @@ function startEdit(r){
 function renderMine(){
   const box=$("mineList");box.innerHTML="";
   MINE.slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).forEach(r=>{
-    const can=r.tr==="car"&&Date.now()<deadline(r.date,r.tr,r.dir,r.time).getTime();
+    const can=r.tr==="car"&&Date.now()<(r.deadline?new Date(r.deadline):deadline(r.date,r.tr,r.dir,r.time)).getTime();
     const d=document.createElement("div");d.style.cssText="border-top:1px solid var(--b);padding:10px 0";
     const h=document.createElement("b");h.textContent=r.name+" ("+r.cls+")";
     const s=document.createElement("div");s.className="m";
@@ -389,7 +396,7 @@ function renderMine(){
         loadMine();
       };
       d.append(e,x);
-    }else{const l=document.createElement("div");l.className="m";l.textContent=r.tr==="car"?t("locked")+dateTime(deadline(r.date,r.tr,r.dir,r.time))+")":t("archive");d.append(l)}
+    }else{const l=document.createElement("div");l.className="m";l.textContent=r.tr==="car"?t("locked")+dateTime((r.deadline?new Date(r.deadline):deadline(r.date,r.tr,r.dir,r.time)))+")":t("archive");d.append(l)}
     box.append(d);
   });
 }

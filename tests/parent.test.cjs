@@ -70,3 +70,11 @@ test('refresh picks up new points/times, rejects bad catalog and blocks stale su
  assert.ok(h.nodes.pt.options.some(o=>o.textContent==='Учебная улица, дом А'));
  h.context.fetch=async()=>{throw Error('offline');};await h.nodes['catalog-refresh'].onclick();assert.equal(h.nodes.send.disabled,true);await h.nodes.send.onclick();assert.equal(h.calls.length,0);
 });
+
+test('custom deadline overrides 24h and server-returned record deadline is respected',async()=>{
+ const h=start();await h.ready;
+ vm.runInContext('readDeadlines({deadlines:[{date:"2030-01-18",dir:"fri",time:"16:00",deadline:"2030-01-17T13:30:00Z"}]})',h.context);
+ h.nodes.date.value='2030-01-18';h.nodes.time.value='16:00';h.nodes.time.onchange();assert.match(h.nodes['trip-deadline'].textContent,/17\.01\.2030, 18:30/);
+ assert.equal(vm.runInContext('deadline("2030-01-18","car","fri","16:00").toISOString()',h.context),'2030-01-17T13:30:00.000Z');
+ vm.runInContext('readDeadlines({deadlines:[]})',h.context);h.nodes.time.onchange();assert.match(h.nodes['trip-deadline'].textContent,/17\.01\.2030, 16:00/);
+});

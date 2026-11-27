@@ -79,8 +79,10 @@
       $("records").replaceChildren(); $("count").textContent = "";
     }
     function clearSession(text) {
+      root.RazvozkaOrganizerNavigation?.setAuthenticated(false);
       if(catalogAdmin)catalogAdmin.clear();
       if(dispatch)dispatch.clear();
+      if(deadlineUI)deadlineUI.clear();
       generation++; clearTimeout(timer); timer = null; session = null; store = null;
       clearList(); setBusy(false);
       $("workspace").hidden = true; $("login-panel").hidden = false;
@@ -128,6 +130,13 @@
         if(session!==auth||!ensureSession())throw Error("Сеанс завершён.");return result;
       }catch(e){if(e.denied&&session===auth)clearSession(e.message);throw e;}
     },()=>rows);
+    const deadlineUI=root.RazvozkaDeadlineUI?.mount(document,async(fn,args)=>{
+      if(!ensureSession())throw Error("Войдите заново.");
+      const auth=session;
+      try{const result=await request("/rest/v1/rpc/"+fn,args,auth.token);
+        if(session!==auth||!ensureSession())throw Error("Сеанс завершён.");return result;
+      }catch(e){if(e.denied&&session===auth)clearSession(e.message);throw e;}
+    });
     async function readList(auth, filters) {
       const result = await request("/rest/v1/rpc/organizer_signups", filters, auth.token);
       if (!result || !Array.isArray(result.rows)) throw new Error("Сервер вернул некорректный список.");
@@ -200,6 +209,7 @@
         rows = list; loadedDate = selected.p_date; store.reconcile(rows);
         $("workspace").hidden = false; $("login-panel").hidden = true;
         timer = setTimeout(() => clearSession("Войдите заново: сеанс завершён."), Math.min(auth.expires - Date.now(), 2147483647));
+        root.RazvozkaOrganizerNavigation?.setAuthenticated(true);
         render(); message("Вход выполнен. Отметки проверки — ручные.");
         if(catalogAdmin)catalogAdmin.open();
         if(dispatch)dispatch.open();

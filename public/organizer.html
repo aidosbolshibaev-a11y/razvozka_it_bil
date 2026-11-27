@@ -11,12 +11,24 @@
   <script src="trip-catalog.js" defer></script>
   <script src="catalog-admin.js" defer></script>
   <script src="dispatch.js" defer></script>
+  <script src="organizer-navigation.js" defer></script>
+  <script src="deadline-ui.js" defer></script>
   <script src="organizer.js" defer></script>
 </head>
 <body>
+ <div class="organizer-shell">
+  <aside class="organizer-sidebar" id="organizer-sidebar" hidden>
+   <div class="organizer-brand"><img src="assets/bil.webp" alt="" width="60" height="44"><div><strong>BURABAY IT BIL</strong><small>Кабинет организатора</small></div></div>
+   <nav class="organizer-nav" aria-label="Разделы кабинета">
+    <a href="#lists" data-organizer-route="lists" aria-controls="lists-panel">Готовые списки</a>
+    <a href="#schedule" data-organizer-route="schedule" aria-controls="schedule-panel">Адреса и время</a>
+    <a href="#drivers" data-organizer-route="drivers" aria-controls="drivers-panel">Водители</a>
+   </nav>
+   <a href="index.html">← Страница родителей</a>
+  </aside>
   <main>
     <a href="index.html">← Запись на развозку</a>
-    <h1>Списки организатора</h1>
+    <h1>Кабинет организатора</h1>
     <p>Откройте выбранную родителем точку по ссылке в записи и поставьте отметку в списке. Проверка адресов пока ручная.</p>
     <section class="panel" id="login-panel" aria-labelledby="login-title">
       <h2 id="login-title">Вход организатора</h2>
@@ -30,32 +42,15 @@
       </form>
     </section>
     <p id="message" role="status" aria-live="polite"></p>
-    <section class="panel" id="workspace" aria-labelledby="list-title" hidden>
+    <section class="panel" id="workspace" aria-labelledby="workspace-title" hidden>
       <div class="actions">
-        <h2 id="list-title">Готовый список</h2>
+        <h2 id="workspace-title">Управление развозкой</h2>
         <button type="button" id="logout">Выйти</button>
       </div>
-      <section id="catalog-admin" class="panel" aria-labelledby="catalog-title" hidden>
-        <h2 id="catalog-title">Общие точки и время выезда</h2>
-        <p>Новые варианты доступны всем родителям после обновления формы. Время добавляется для всех дат выбранного направления, по Астане. Дедлайн — за 24 часа до выезда.</p>
-        <form id="point-form">
-          <h3>Добавить общую точку</h3>
-          <label for="point-city">Город доставки</label><select id="point-city"><option value="astana">Астана</option><option value="shchuchinsk">Щучинск</option></select>
-          <label for="point-address">Адрес общей точки</label><input id="point-address" minlength="5" maxlength="200" required autocomplete="off">
-          <p>Укажите улицу, здание и при необходимости название места. Проверьте адрес перед добавлением. Цена общей точки — 5 500 ₸.</p>
-          <button id="point-add" type="submit">Добавить точку</button>
-        </form>
-        <ul id="catalog-points"></ul>
-        <form id="departure-form">
-          <h3>Добавить время выезда</h3>
-          <label for="departure-dir">Маршрут</label><select id="departure-dir"><option value="fri">Щучинск → Астана</option><option value="sun">Астана → Щучинск</option></select>
-          <label for="departure-time">Время по Астане</label><input id="departure-time" type="time" step="60" required>
-          <button id="departure-add" type="submit">Добавить время</button>
-        </form>
-        <ul id="catalog-times"></ul>
-        <button id="catalog-reload" type="button">Обновить варианты</button>
-        <p id="catalog-message" role="status" aria-live="polite"></p>
-      </section>
+      <p id="dispatch-message" role="status" aria-live="polite"></p>
+      <section id="lists-panel" data-organizer-panel="lists" aria-labelledby="list-title">
+      <h2 id="list-title" tabindex="-1">Готовые списки</h2>
+      <p>Выберите дату и направление, проверьте записи, сформируйте группы и выгрузите список для Excel.</p>
       <p>В списке все записи на выбранную дату, включая рейсы с открытой записью. Пока запись открыта, список может измениться.</p>
       <form id="filters">
         <label for="trip-date">Дата поездки</label>
@@ -77,20 +72,52 @@
       <p>Выгружается показанный список в XLSX. Изменения в файле не обновляют сайт. Храните файл со списком в месте с ограниченным доступом.</p>
       <ol id="records"></ol>
       <section class="panel" aria-labelledby="dispatch-title">
-       <h2 id="dispatch-title">Водители и публикация групп</h2>
+       <h3 id="dispatch-title">Формирование и публикация групп</h3>
+       <button type="button" id="dispatch-refresh">Обновить водителей и записи для группировки</button>
+       <p>Сначала обновите основной список на нужную дату. Выберите записи одного рейса после дедлайна. Проверьте здания и ближайшие улицы вручную; автоматического определения улиц нет. Не больше 7 детей и 4 улиц, расстояние между зданиями — до 1 500 м. Для общей точки укажите её координаты. Число улиц и расстояние не заменяют проверки соседства.</p>
+       <form id="group-form"><ol id="dispatch-records"></ol><label for="group-driver">Водитель новой группы</label><select id="group-driver" required></select><button type="submit">Создать группу с водителем</button></form>
+       <p>Публикация действует для всего рейса: все актуальные записи должны быть распределены. После изменений расформируйте устаревшие группы и соберите заново. Родитель увидит имя, телефон и Kaspi только после публикации.</p>
+       <ul id="dispatch-groups"></ul>
+      </section>
+      </section>
+      <section id="schedule-panel" data-organizer-panel="schedule" aria-labelledby="schedule-title">
+       <h2 id="schedule-title" tabindex="-1">Адреса и время</h2>
+      <section id="catalog-admin" class="panel" aria-labelledby="catalog-title" hidden>
+        <h2 id="catalog-title">Общие точки и время выезда</h2>
+        <p>Новые варианты доступны всем родителям после обновления формы. Время добавляется для всех дат выбранного направления, по Астане. Дедлайн — за 24 часа до выезда.</p>
+        <form id="point-form">
+          <h3>Добавить общую точку</h3>
+          <label for="point-city">Город доставки</label><select id="point-city"><option value="astana">Астана</option><option value="shchuchinsk">Щучинск</option></select>
+          <label for="point-address">Адрес общей точки</label><input id="point-address" minlength="5" maxlength="200" required autocomplete="off">
+          <p>Укажите улицу, здание и при необходимости название места. Проверьте адрес перед добавлением. Цена общей точки — 5 500 ₸.</p>
+          <button id="point-add" type="submit">Добавить точку</button>
+        </form>
+        <ul id="catalog-points"></ul>
+        <form id="departure-form">
+          <h3>Добавить время выезда</h3>
+          <label for="departure-dir">Маршрут</label><select id="departure-dir"><option value="fri">Щучинск → Астана</option><option value="sun">Астана → Щучинск</option></select>
+          <label for="departure-time">Время по Астане</label><input id="departure-time" type="time" step="60" required>
+          <button id="departure-add" type="submit">Добавить время</button>
+        </form>
+        <ul id="catalog-times"></ul>
+        <button id="catalog-reload" type="button">Обновить варианты</button>
+        <form id="point-edit-form"><h3>Изменить адрес общей точки</h3><label for="point-edit-id">Общая точка</label><select id="point-edit-id" required></select><label for="point-edit-address">Новый адрес</label><input id="point-edit-address" required minlength="5" maxlength="200"><p>Обновится вариант для новых записей. В существующих записях сохранится прежний адрес; при необходимости измените их в «Готовых списках».</p><button type="submit">Сохранить адрес</button></form>
+        <form id="deadline-form"><h3>Дедлайн конкретного рейса</h3><label for="deadline-date">Дата поездки</label><input id="deadline-date" type="date" required><label for="deadline-dir">Маршрут</label><select id="deadline-dir"><option value="fri">Щучинск → Астана</option><option value="sun">Астана → Щучинск</option></select><label for="deadline-time">Время выезда из расписания</label><input id="deadline-time" type="time" step="60" required><label for="deadline-value">Закрыть запись — дата и время по Астане</label><input id="deadline-value" type="datetime-local" step="60" required><p>По умолчанию — за 24 часа. Новый дедлайн действует только для указанного рейса и не может быть позже выезда.</p><button type="submit">Сохранить дедлайн</button></form><p id="deadline-message" role="status" aria-live="polite"></p>
+        <p id="catalog-message" role="status" aria-live="polite"></p>
+      </section>
+      </section>
+      <section id="drivers-panel" data-organizer-panel="drivers" aria-labelledby="drivers-title">
+       <h2 id="drivers-title" tabindex="-1">Водители</h2>
+       <p>Добавьте водителей и их реквизиты для оплаты. Назначение водителя группе и публикация доступны в «Готовых списках».</p>
        <form id="driver-form"><h3>Добавить водителя</h3>
         <label for="driver-name">Имя</label><input id="driver-name" required minlength="2" maxlength="120">
         <label for="driver-phone">Телефон: 7 и 10 цифр</label><input id="driver-phone" type="tel" required pattern="7[0-9]{10}">
         <label for="driver-kaspi">Номер Kaspi для оплаты</label><input id="driver-kaspi" inputmode="numeric" required pattern="[0-9]{10,20}">
         <button type="submit">Добавить водителя</button>
        </form><ul id="dispatch-drivers"></ul>
-       <button type="button" id="dispatch-refresh">Обновить водителей и записи для группировки</button>
-       <p>Сначала обновите основной список на нужную дату. Выберите записи одного рейса после дедлайна. Проверьте здания и ближайшие улицы вручную; автоматического определения улиц нет. Не больше 7 детей и 4 улиц, расстояние между зданиями — до 1 500 м. Для общей точки укажите её координаты. Число улиц и расстояние не заменяют проверки соседства.</p>
-       <form id="group-form"><ol id="dispatch-records"></ol><label for="group-driver">Водитель новой группы</label><select id="group-driver" required></select><button type="submit">Создать группу с водителем</button></form>
-       <p>Публикация действует для всего рейса: все актуальные записи должны быть распределены. После изменений расформируйте устаревшие группы и соберите заново. Родитель увидит имя, телефон и Kaspi только после публикации.</p>
-       <ul id="dispatch-groups"></ul><p id="dispatch-message" role="status" aria-live="polite"></p>
       </section>
     </section>
   </main>
+ </div>
 </body>
 </html>

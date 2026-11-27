@@ -40,7 +40,10 @@ Deno.serve(async (req) => {
   const out: string[] = [];
   for (const [k, g] of Object.entries(groups)) {
     const f = g[0];
-    if (done.has(k) || Date.now() < deadline(f.trip_date, f.tr, f.dir, f.dep_time)) continue;
+    if(done.has(k))continue;
+    const {data:limit,error:deadlineError}=await sb.rpc("dl",{p_date:f.trip_date,p_tr:f.tr,p_dir:f.dir,p_time:f.dep_time});
+    if(deadlineError||!Number.isFinite(Date.parse(limit)))return new Response("Deadline check failed",{status:500});
+    if(Date.now()<Date.parse(limit))continue;
     if (await sendWhatsApp(text(g))) { await sb.from("sent_lists").insert({ key: k }); out.push(k); }
   }
   return new Response(JSON.stringify({ sent: out }), { headers: { "Content-Type": "application/json" } });
