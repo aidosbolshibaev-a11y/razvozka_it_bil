@@ -10,6 +10,7 @@
   <script src="location-picker.js" defer></script>
   <script src="trip-catalog.js" defer></script>
   <script src="catalog-admin.js" defer></script>
+  <script src="dispatch.js" defer></script>
   <script src="organizer.js" defer></script>
 </head>
 <body>
@@ -75,6 +76,20 @@
       </div>
       <p>Выгружается показанный список в XLSX. Изменения в файле не обновляют сайт. Храните файл со списком в месте с ограниченным доступом.</p>
       <ol id="records"></ol>
+      <section class="panel" aria-labelledby="dispatch-title">
+       <h2 id="dispatch-title">Водители и публикация групп</h2>
+       <form id="driver-form"><h3>Добавить водителя</h3>
+        <label for="driver-name">Имя</label><input id="driver-name" required minlength="2" maxlength="120">
+        <label for="driver-phone">Телефон: 7 и 10 цифр</label><input id="driver-phone" type="tel" required pattern="7[0-9]{10}">
+        <label for="driver-kaspi">Номер Kaspi для оплаты</label><input id="driver-kaspi" inputmode="numeric" required pattern="[0-9]{10,20}">
+        <button type="submit">Добавить водителя</button>
+       </form><ul id="dispatch-drivers"></ul>
+       <button type="button" id="dispatch-refresh">Обновить водителей и записи для группировки</button>
+       <p>Сначала обновите основной список на нужную дату. Выберите записи одного рейса после дедлайна. Проверьте здания и ближайшие улицы вручную; автоматического определения улиц нет. Не больше 7 детей и 4 улиц, расстояние между зданиями — до 1 500 м. Для общей точки укажите её координаты. Число улиц и расстояние не заменяют проверки соседства.</p>
+       <form id="group-form"><ol id="dispatch-records"></ol><label for="group-driver">Водитель новой группы</label><select id="group-driver" required></select><button type="submit">Создать группу с водителем</button></form>
+       <p>Публикация действует для всего рейса: все актуальные записи должны быть распределены. После изменений расформируйте устаревшие группы и соберите заново. Родитель увидит имя, телефон и Kaspi только после публикации.</p>
+       <ul id="dispatch-groups"></ul><p id="dispatch-message" role="status" aria-live="polite"></p>
+      </section>
     </section>
   </main>
 </body>
