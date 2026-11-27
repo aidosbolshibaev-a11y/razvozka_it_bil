@@ -85,10 +85,31 @@
 .guide-highlight>.guide-label:first-child{margin-top:0}
 .guide-deadline{background:var(--w)}
 .guide-deadline strong{display:block;margin:5px 0;font-size:15px}
-.info-grid p.guide-example-note{margin-top:12px;font-size:12px;color:var(--m);line-height:1.55}
+.info-grid p.guide-example-note,.info-carousel p.guide-example-note{margin-top:12px;font-size:12px;color:var(--m);line-height:1.55}
 .guide-example-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .guide-example-actions span{padding:6px 8px;border:1px solid var(--b);border-radius:7px;background:var(--bg)}
 .guide-example-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .guide-link{display:flex;align-items:center;min-height:44px;margin-top:auto;color:var(--a);font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
 .guide-link:focus-visible{outline:3px solid var(--a);outline-offset:3px;border-radius:4px}
 .guide-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+
+.info-carousel{min-width:0;margin-top:18px}
+.info-carousel-viewport{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:18px;position:relative;border-radius:22px;overscroll-behavior-x:contain;scrollbar-width:thin}
+.info-carousel-viewport>.info-guide{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;box-shadow:none}
+.carousel-controls{display:none;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:14px}
+.carousel-ready .carousel-controls{display:flex}
+.carousel-controls button{min-height:44px;min-width:44px;border:1px solid var(--b);border-radius:10px;background:var(--c);color:var(--t);padding:10px 12px;font:inherit;cursor:pointer}
+.carousel-controls button:hover{border-color:var(--a)}
+.carousel-controls button:focus-visible,.info-carousel-viewport:focus-visible{outline:3px solid var(--a);outline-offset:3px}
+.carousel-dots{display:flex;gap:6px}
+.carousel-dots button{border-radius:50%;padding:6px}
+.carousel-dots [aria-current="true"]{background:var(--a);border-color:var(--a);color:white}
+#carousel-count{font-size:13px;color:var(--m)}
+@media(min-width:801px){
+ .info-carousel .info-guide{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px 24px;align-content:start}
+ .info-carousel .guide-heading{grid-column:1;grid-row:1;align-self:start}
+ .info-carousel .info-guide>p{grid-column:1;grid-row:2;margin:0;line-height:1.65}
+ .info-carousel .guide-example{grid-column:2;grid-row:1/4;margin:0}
+ .info-carousel .guide-link{grid-column:1;grid-row:3;align-self:end}
+}
+@media(prefers-reduced-motion:reduce){.info-carousel-viewport{scroll-behavior:auto}}
