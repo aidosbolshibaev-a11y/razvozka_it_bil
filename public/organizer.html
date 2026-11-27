@@ -75,7 +75,14 @@
        <h3 id="dispatch-title">Формирование и публикация групп</h3>
        <button type="button" id="dispatch-refresh">Обновить водителей и записи для группировки</button>
        <p>Сначала обновите основной список на нужную дату. Выберите записи одного рейса после дедлайна. Проверьте здания и ближайшие улицы вручную; автоматического определения улиц нет. Не больше 7 детей и 4 улиц, расстояние между зданиями — до 1 500 м. Для общей точки укажите её координаты. Число улиц и расстояние не заменяют проверки соседства.</p>
-       <form id="group-form"><ol id="dispatch-records"></ol><label for="group-driver">Водитель новой группы</label><select id="group-driver" required></select><button type="submit">Создать группу с водителем</button></form>
+       <form id="auto-group-form" class="panel"><h3>Автоматически собрать по гексам</h3>
+       <label for="auto-date">Дата поездки</label><input id="auto-date" type="date" required>
+       <label for="auto-dir">Маршрут</label><select id="auto-dir"><option value="fri">Щучинск → Астана</option><option value="sun">Астана → Щучинск</option></select>
+       <label for="auto-time">Время выезда из расписания</label><input id="auto-time" type="time" step="60" required>
+       <p>После дедлайна система возьмёт актуальные координаты рейса и создаст группы до 7 детей. Учитываются своя и соседние ячейки, расстояние между адресами до 1 500 м. Гекс со стороной 300 м — приблизительная зона; число улиц и дорожные препятствия не проверяются. Существующие группы сохраняются, распределяются только ещё не включённые записи.</p>
+       <button type="submit">Собрать группы автоматически</button><ul id="auto-missing"></ul></form>
+       <details><summary>Ручная сборка и исправление записей</summary>
+       <form id="group-form"><ol id="dispatch-records"></ol><label for="group-driver">Водитель новой группы</label><select id="group-driver" required></select><button type="submit">Создать группу с водителем</button></form></details>
        <p>Публикация действует для всего рейса: все актуальные записи должны быть распределены. После изменений расформируйте устаревшие группы и соберите заново. Родитель увидит имя, телефон и Kaspi только после публикации.</p>
        <ul id="dispatch-groups"></ul>
       </section>
@@ -102,6 +109,7 @@
         <ul id="catalog-times"></ul>
         <button id="catalog-reload" type="button">Обновить варианты</button>
         <form id="point-edit-form"><h3>Изменить адрес общей точки</h3><label for="point-edit-id">Общая точка</label><select id="point-edit-id" required></select><label for="point-edit-address">Новый адрес</label><input id="point-edit-address" required minlength="5" maxlength="200"><p>Обновится вариант для новых записей. В существующих записях сохранится прежний адрес; при необходимости измените их в «Готовых списках».</p><button type="submit">Сохранить адрес</button></form>
+        <form id="point-coordinates-form"><h3>Координаты общей точки для автогруппировки</h3><p>Выберите общую точку выше. Задайте координаты здания один раз — они будут использоваться для записей с этой точкой. Не вводите центр города вместо неизвестного здания.</p><label for="point-lat">Широта</label><input id="point-lat" type="number" step="any" min="50" max="54" required><label for="point-lon">Долгота</label><input id="point-lon" type="number" step="any" min="69" max="73" required><button type="submit">Сохранить координаты точки</button></form>
         <form id="deadline-form"><h3>Дедлайн конкретного рейса</h3><label for="deadline-date">Дата поездки</label><input id="deadline-date" type="date" required><label for="deadline-dir">Маршрут</label><select id="deadline-dir"><option value="fri">Щучинск → Астана</option><option value="sun">Астана → Щучинск</option></select><label for="deadline-time">Время выезда из расписания</label><input id="deadline-time" type="time" step="60" required><label for="deadline-value">Закрыть запись — дата и время по Астане</label><input id="deadline-value" type="datetime-local" step="60" required><p>По умолчанию — за 24 часа. Новый дедлайн действует только для указанного рейса и не может быть позже выезда.</p><button type="submit">Сохранить дедлайн</button></form><p id="deadline-message" role="status" aria-live="polite"></p>
         <p id="catalog-message" role="status" aria-live="polite"></p>
       </section>

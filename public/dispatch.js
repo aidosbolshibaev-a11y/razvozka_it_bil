@@ -7,15 +7,17 @@ function mount(document,rpc,getRows){
  function button(parent,text,fn){const b=el('button',text);b.type='button';b.addEventListener('click',fn);parent.append(b);return b;}
  async function run(action,args={}){if(busy)return;busy=true;const op=version;$('dispatch-message').textContent='Загрузка…';
  try{const result=await rpc('organizer_dispatch',{p_action:action,p_data:args});if(op!==version)return;
- if(!Array.isArray(result.drivers)||!Array.isArray(result.groups))throw Error('Некорректный ответ сервера');data=result;render();$('dispatch-message').textContent='Обновлено. После изменения записи обновите основной список.';
+ if(!Array.isArray(result.drivers)||!Array.isArray(result.groups))throw Error('Некорректный ответ сервера');data=result;render();$('dispatch-message').textContent=result.auto_result?'Автосборка: новых групп '+result.auto_result.groups+', распределено детей '+result.auto_result.records+', без координат '+result.auto_result.missing.length+'. Назначьте водителей и опубликуйте рейс.':'Обновлено. После изменения записи обновите основной список.';const report=$('auto-missing');if(report){report.replaceChildren();for(const id of result.auto_result?.missing||[]){const row=getRows().find(r=>r.id===id);report.append(el('li',(row?row.name+' · '+row.addr:'Запись '+id)+' — нужны координаты'));}}
  }catch(e){if(op===version)$('dispatch-message').textContent=e.message;}
  finally{if(op===version)busy=false;}}
  function render(){
  $('dispatch-drivers').replaceChildren();for(const d of data.drivers)$('dispatch-drivers').append(el('li',d.name+' · '+d.phone+' · Kaspi '+d.kaspi));
  const select=$('group-driver');select.replaceChildren();for(const d of data.drivers){const o=el('option',d.name+' · '+d.phone);o.value=d.id;select.append(o);}
- $('dispatch-groups').replaceChildren();for(const g of data.groups){const box=el('li',g.trip_date+' · '+(g.dir==='fri'?'Щучинск → Астана':'Астана → Щучинск')+' · '+g.dep_time+' · '+(data.drivers.find(d=>d.id===g.driver_id)?.name||'Водитель')+' · '+(g.published?'Опубликовано':'Черновик')+' · '+(g.members||[]).length+' детей');
+ $('dispatch-groups').replaceChildren();for(const g of data.groups){const box=el('li',g.trip_date+' · '+(g.dir==='fri'?'Щучинск → Астана':'Астана → Щучинск')+' · '+g.dep_time+' · '+(data.drivers.find(d=>d.id===g.driver_id)?.name||'Водитель не назначен')+' · '+(g.published?'Опубликовано':'Черновик')+' · '+(g.members||[]).length+' детей');
+ const names=(g.members||[]).map(id=>getRows().find(r=>r.id===id)?.name||id);box.append(el('p',names.join('; ')));if(g.grouping_method==='hex')box.append(el('p','Автогруппа по координатам; улицы не определялись'));const select=document.createElement('select');select.setAttribute('aria-label','Водитель группы '+g.id);for(const d of data.drivers){const o=el('option',d.name);o.value=d.id;select.append(o);}if(g.driver_id)select.value=g.driver_id;box.append(select);button(box,'Назначить водителя',()=>run('assign_driver',{id:g.id,driver_id:select.value}));
  button(box,'Опубликовать весь рейс',()=>run('publish',{id:g.id}));button(box,'Расформировать группу',()=>{if(root.confirm('Расформировать группу? Публикация рейса будет снята.'))run('remove_group',{id:g.id});});$('dispatch-groups').append(box);}
  }
+ if($('auto-group-form'))$('auto-group-form').addEventListener('submit',e=>{e.preventDefault();return run('auto_group',{date:$('auto-date').value,dir:$('auto-dir').value,time:$('auto-time').value});});
  $('driver-form').addEventListener('submit',e=>{e.preventDefault();return run('driver',{name:$('driver-name').value.trim(),phone:$('driver-phone').value.replace(/\D/g,''),kaspi:$('driver-kaspi').value.replace(/\D/g,'')});});
  let candidates=[];
  function records(){candidates=[];$('dispatch-records').replaceChildren();for(const r of getRows()){
@@ -35,7 +37,7 @@ function mount(document,rpc,getRows){
  const members=selected.map(x=>({id:x.r.id,version:x.r.updated_at,street:x.street.value.trim(),lat:x.lat.value===''?null:Number(x.lat.value),lon:x.lon.value===''?null:Number(x.lon.value),verified:x.verified.checked}));
  if(members.some(m=>!m.verified||!m.street||m.lat===null||m.lon===null)){$('dispatch-message').textContent='Проверьте улицу, здание и координаты каждой записи.';return;}
  return run('group',{driver_id:$('group-driver').value,members});});
- return {open(){records();return run('read');},clear(){version++;busy=false;data={drivers:[],groups:[]};candidates=[];for(const id of ['dispatch-drivers','dispatch-groups','dispatch-records'])$(id).replaceChildren();for(const id of ['driver-name','driver-phone','driver-kaspi'])$(id).value='';$('dispatch-message').textContent='';}};
+ return {open(){records();return run('read');},clear(){version++;busy=false;data={drivers:[],groups:[]};candidates=[];for(const id of ['dispatch-drivers','dispatch-groups','dispatch-records'])$(id).replaceChildren();for(const id of ['driver-name','driver-phone','driver-kaspi'])$(id).value='';$('dispatch-message').textContent='';if($('auto-missing'))$('auto-missing').replaceChildren();}};
 }
 root.RazvozkaDispatch={mount};if(typeof module!=='undefined'&&module.exports)module.exports={mount};
 })(globalThis);

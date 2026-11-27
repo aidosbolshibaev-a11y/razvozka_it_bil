@@ -111,7 +111,7 @@
       }
       if (response.status === 429) throw new Error("Слишком много попыток. Подождите и повторите вход позже.");
       if (path.startsWith("/rest/v1/rpc/") && response.status === 404) {
-        throw new Error("Не настроена функция сервера: для списков нужна миграция 0003_organizer_lists.sql, для точек и времени — 0005_trip_catalog.sql, для водителей — 0006_drivers_groups.sql.");
+        throw new Error("Не настроена функция сервера: для списков нужна миграция 0003_organizer_lists.sql, для точек и времени — 0005_trip_catalog.sql, для водителей — 0006_drivers_groups.sql, для автосборки — 0008_hex_groups.sql.");
       }
       if (!response.ok) throw new Error("Не удалось выполнить запрос. Проверьте настройки и повторите позже.");
       return response.json();
